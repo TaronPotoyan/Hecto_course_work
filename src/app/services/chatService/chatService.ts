@@ -2,7 +2,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { API_BASE_URL } from '../api';
 import { LanguageService } from '../languageService/languageService';
-import { ChatErrorCode } from '../../shared/chatWidget/chatI18n';
+import type { ChatErrorCode } from '../../shared/chatWidget/chatI18n';
 
 export interface IChatMessage {
   role: 'user' | 'assistant';

@@ -10,4 +10,7 @@
 </div>
 
 <app-toast />
-<app-chat-widget ngSkipHydration />
+<!-- Support chat isn't needed for first paint: load it once the browser is idle -->
+@defer (on idle) {
+  <app-chat-widget />
+}
