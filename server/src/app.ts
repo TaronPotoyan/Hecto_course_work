@@ -13,7 +13,7 @@ export function createApp() {
 
   app.set('trust proxy', 'loopback');
   app.disable('x-powered-by');
-  app.use(cors({ origin: config.corsOrigins }));
+  app.use(cors({ origin: config.corsOrigins.includes('*') ? '*' : config.corsOrigins }));
   app.use(express.json({ limit: '100kb' }));
 
   app.get('/api/health', async (_req, res) => {
