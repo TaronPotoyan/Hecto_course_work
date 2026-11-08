@@ -12,12 +12,14 @@ import { Helper } from '../../helpers/helperClass';
 import { LocalStorageService } from '../../services/localstorageService/localStorageService';
 import { ToastService } from '../../services/toastService/toastService';
 import { SubscribeService } from '../../services/subscribeService/subscribeService';
+import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LanguageService } from '../../services/languageService/languageService';
 
 const UNIQUE_PRODUCT_ID = 7;
 
 @Component({
   selector: 'app-home.component',
-  imports: [ProductComponent, CurrencyPipe, CycleProductComponent, FormsModule],
+  imports: [TranslatePipe, ProductComponent, CurrencyPipe, CycleProductComponent, FormsModule],
   templateUrl: './homePage.component.html',
   styleUrl: './homePage.component.scss',
 })
@@ -26,6 +28,7 @@ export class HomePageComponent {
   private router = inject(Router);
   private localStorageService = inject(LocalStorageService);
   private toast = inject(ToastService);
+  private languageService = inject(LanguageService);
   private subscribeService = inject(SubscribeService);
 
   readonly productAction = ProductAction;
@@ -83,7 +86,9 @@ export class HomePageComponent {
     if (!product) return;
     if (type === ProductAction.Basket) return this.localStorageService.addToBasket(product);
     if (type === ProductAction.Like)
-      return this.toast.show(`${product.name} added to your wishlist`);
+      return this.toast.show(
+        this.languageService.translate('{name} added to your wishlist', { name: product.name }),
+      );
     if (type === ProductAction.Zoom) return this.handleZoom(true, product);
   }
 

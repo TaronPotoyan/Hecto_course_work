@@ -5,10 +5,11 @@ import { IProduct } from '../../../models/interface';
 import { CommonModule } from '@angular/common';
 import { NumberFormat, QuantityAction } from '../../../models/enum';
 import { LocalStorageService } from '../../../services/localstorageService/localStorageService';
+import { TranslatePipe } from '../../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-basket-item',
-  imports: [CommonModule],
+  imports: [TranslatePipe, CommonModule],
   templateUrl: 'basketItem.component.html',
   styleUrl: 'basketItem.component.scss',
 })

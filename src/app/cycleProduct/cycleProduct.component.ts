@@ -3,9 +3,11 @@ import { Component, inject, input, signal } from '@angular/core';
 import { IProduct } from '../models/interface';
 import { NavigatorService } from '../services/navigatorService/navigatorService';
 import { AppRoutes } from '../models/enum';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 @Component({
   selector: 'app-cycle-product-component',
+  imports: [TranslatePipe],
   templateUrl: 'cycleProduct.component.html',
   styleUrl: 'cycleProduct.component.scss',
 })

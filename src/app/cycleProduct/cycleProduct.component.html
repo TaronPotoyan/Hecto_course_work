@@ -3,7 +3,7 @@
   <div class="img" [class.isHovered]="hovered()">
     <img [src]="product().url" [alt]="product().name" />
     <button class="view-details-btn" [class.visible]="hovered()" (click)="viewDetails()">
-      View Category
+      {{ 'View Category' | t }}
     </button>
   </div>
   <h3 class="heading-4 title">{{ product().name }}</h3>

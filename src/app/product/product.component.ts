@@ -9,10 +9,12 @@ import * as Enums from '../models/enum';
 import { LocalStorageService } from '../services/localstorageService/localStorageService';
 import { NavigatorService } from '../services/navigatorService/navigatorService';
 import { ToastService } from '../services/toastService/toastService';
+import { TranslatePipe } from '../i18n/translate.pipe';
+import { LanguageService } from '../services/languageService/languageService';
 
 @Component({
   selector: 'app-product',
-  imports: [CommonModule],
+  imports: [TranslatePipe, CommonModule],
   templateUrl: 'product.component.html',
   styleUrl: 'product.component.scss',
 })
@@ -20,6 +22,7 @@ export class ProductComponent {
   private navService = inject(NavigatorService);
   private localStorageService = inject(LocalStorageService);
   private toast = inject(ToastService);
+  private languageService = inject(LanguageService);
 
   readonly productType = Enums.ProductDescription;
   readonly dateFormat = Enums.DateFormat;
@@ -51,7 +54,11 @@ export class ProductComponent {
     }
 
     if (actionType === Enums.ProductAction.Like) {
-      this.toast.show(`${this.product().name} added to your wishlist`);
+      this.toast.show(
+        this.languageService.translate('{name} added to your wishlist', {
+          name: this.product().name,
+        }),
+      );
       return;
     }
 

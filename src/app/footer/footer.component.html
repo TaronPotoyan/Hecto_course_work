@@ -9,23 +9,25 @@
             <input
               type="email"
               name="email"
-              placeholder="Enter Email Address"
-              aria-label="Email address"
+              [placeholder]="'Enter Email Address' | t"
+              [attr.aria-label]="'Email address' | t"
               class="search__input"
               [ngModel]="email()"
               (ngModelChange)="email.set($event)"
             />
-            <button class="search__button" type="submit" [disabled]="submitting()">Sign Up</button>
+            <button class="search__button" type="submit" [disabled]="submitting()">
+              {{ 'Sign Up' | t }}
+            </button>
           </form>
           <span class="paragraph">17 Princess Road, London, Greater London NW1 8JR, UK</span>
         </div>
         @for (section of footerSections; track section.title) {
           <div class="additonal">
-            <h4 class="heading-4">{{ section.title }}</h4>
+            <h4 class="heading-4">{{ section.title | t }}</h4>
             <ul>
               @for (link of section.links; track link) {
                 <li>
-                  <a (click)="handleNavigate(link)">{{ link }}</a>
+                  <a (click)="handleNavigate(link)">{{ link | t }}</a>
                 </li>
               }
             </ul>
@@ -37,7 +39,9 @@
   <div class="footer-bottom">
     <div class="container">
       <div class="static-info">
-        <span class="paragraph">©{{ year }} Webecy - All Rights Reserved</span>
+        <span class="paragraph">{{
+          '©{year} Webecy - All Rights Reserved' | t: { year: year }
+        }}</span>
         <div class="icons-container">
           @for (social of socialMedia; track social.mediaName) {
             <a

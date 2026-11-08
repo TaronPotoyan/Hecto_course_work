@@ -1,10 +1,10 @@
 <!-- src/app/pages/productPage/productPage.component.html -->
 <div class="container flex-header">
-  <h1 class="heading-1">Products</h1>
+  <h1 class="heading-1">{{ 'Products' | t }}</h1>
   <div class="breadcrumb">
-    <span class="color-grey-3">Home</span>
+    <span class="color-grey-3">{{ 'Home' | t }}</span>
     <span class="color-grey-3">•</span>
-    <span class="color-pink">Products</span>
+    <span class="color-pink">{{ 'Products' | t }}</span>
   </div>
 </div>
 
@@ -15,16 +15,18 @@
     [attr.aria-expanded]="filtersOpen()"
     (click)="filtersOpen.set(!filtersOpen())"
   >
-    Filters
+    {{ 'Filters' | t }}
     @if (activeFilterCount()) {
       <span class="count">{{ activeFilterCount() }}</span>
     }
   </button>
 
-  <span class="results color-grey-3">{{ filteredProducts().length }} results</span>
+  <span class="results color-grey-3">{{
+    '{count} results' | t: { count: filteredProducts().length }
+  }}</span>
 
   <div class="toolbar-group">
-    <label class="color-grey-3" for="per-page">Per Page</label>
+    <label class="color-grey-3" for="per-page">{{ 'Per Page' | t }}</label>
     <select id="per-page" class="styled-select" (change)="onPerPageChange($event)">
       <option value="10">10</option>
       <option value="5">5</option>
@@ -32,20 +34,20 @@
   </div>
 
   <div class="toolbar-group">
-    <label class="color-grey-3" for="sort-by">Sort By</label>
+    <label class="color-grey-3" for="sort-by">{{ 'Sort By' | t }}</label>
     <select id="sort-by" class="styled-select" (change)="onSortChange($event)">
-      <option [value]="sortOptions.HighToLow">Price: High → Low</option>
-      <option [value]="sortOptions.LowToHigh">Price: Low → High</option>
+      <option [value]="sortOptions.HighToLow">{{ 'Price: High → Low' | t }}</option>
+      <option [value]="sortOptions.LowToHigh">{{ 'Price: Low → High' | t }}</option>
     </select>
   </div>
 
   <div class="toolbar-group view-group">
-    <span class="color-grey-3">View</span>
+    <span class="color-grey-3">{{ 'View' | t }}</span>
     <div class="view-mode">
       <button
         type="button"
         class="view-btn"
-        aria-label="Grid view"
+        [attr.aria-label]="'Grid view' | t"
         [class.active]="viewMode() === layoutType.grid"
         (click)="toggleView(layoutType.grid)"
       >
@@ -59,7 +61,7 @@
       <button
         type="button"
         class="view-btn"
-        aria-label="List view"
+        [attr.aria-label]="'List view' | t"
         [class.active]="viewMode() === layoutType.list"
         (click)="toggleView(layoutType.list)"
       >
@@ -76,14 +78,14 @@
   @if (filtersOpen()) {
     <div class="filters-backdrop" (click)="filtersOpen.set(false)"></div>
   }
-  <aside class="filter-sidebar" [class.open]="filtersOpen()" aria-label="Filters">
+  <aside class="filter-sidebar" [class.open]="filtersOpen()" [attr.aria-label]="'Filters' | t">
     <div class="filter-sidebar__head">
-      <h2 class="heading-4">Filters</h2>
-      <button type="button" class="link-btn" (click)="clearFilters()">Clear all</button>
+      <h2 class="heading-4">{{ 'Filters' | t }}</h2>
+      <button type="button" class="link-btn" (click)="clearFilters()">{{ 'Clear all' | t }}</button>
       <button
         type="button"
         class="close-filters"
-        aria-label="Close filters"
+        [attr.aria-label]="'Close filters' | t"
         (click)="filtersOpen.set(false)"
       >
         ×
@@ -91,7 +93,7 @@
     </div>
     @for (group of filterGroups; track group.title) {
       <section class="filter-group">
-        <h3>{{ group.title }}</h3>
+        <h3>{{ group.title | t }}</h3>
         <ul>
           @if (group.type === filterBy.Rating) {
             @for (row of $any(group.options); track $index) {
@@ -104,7 +106,7 @@
                   (change)="toggleSelection(5 - $index, filterBy.Rating)"
                 />
                 <label class="stars" [for]="'rating-' + (5 - $index)">
-                  <span class="visually-hidden">{{ 5 - $index }} stars</span>
+                  <span class="visually-hidden">{{ '{n} stars' | t: { n: 5 - $index } }}</span>
                   @for (isGold of row; track $index) {
                     <span class="fa fa-star" [class.checked]="isGold" [class.grey]="!isGold"></span>
                   }
@@ -122,7 +124,7 @@
                   [checked]="isChecked(optionValue(option, group.type), group.type)"
                   (change)="toggleSelection(optionValue(option, group.type), group.type)"
                 />
-                <label [for]="option.id">{{ option.label || option.lable }}</label>
+                <label [for]="option.id">{{ option.label || option.lable | t }}</label>
               </li>
             }
           }
@@ -140,13 +142,13 @@
     } @empty {
       <div class="empty-state">
         @if (dbService.isLoading()) {
-          <p class="paragraph">Loading products…</p>
+          <p class="paragraph">{{ 'Loading products…' | t }}</p>
         } @else if (dbService.state() === 'error') {
-          <p class="paragraph">Couldn't load products. Is the API server running?</p>
-          <button class="btn-primary" (click)="dbService.load()">Retry</button>
+          <p class="paragraph">{{ "Couldn't load products. Is the API server running?" | t }}</p>
+          <button class="btn-primary" (click)="dbService.load()">{{ 'Retry' | t }}</button>
         } @else {
-          <p class="paragraph">No products match these filters.</p>
-          <button class="btn-primary" (click)="clearFilters()">Clear filters</button>
+          <p class="paragraph">{{ 'No products match these filters.' | t }}</p>
+          <button class="btn-primary" (click)="clearFilters()">{{ 'Clear filters' | t }}</button>
         }
       </div>
     }
@@ -154,9 +156,13 @@
 </div>
 
 @if (pageCount() > 1) {
-  <nav class="pagination-container container" aria-label="Pagination">
+  <nav class="pagination-container container" [attr.aria-label]="'Pagination' | t">
     <div class="pagination-wrapper">
-      <button class="page-btn prev" aria-label="Previous page" (click)="goToPage(pageNum() - 1)">
+      <button
+        class="page-btn prev"
+        [attr.aria-label]="'Previous page' | t"
+        (click)="goToPage(pageNum() - 1)"
+      >
         <span class="arrow">❮</span>
       </button>
       <div class="page-numbers">
@@ -171,7 +177,11 @@
           </button>
         }
       </div>
-      <button class="page-btn next" aria-label="Next page" (click)="goToPage(pageNum() + 1)">
+      <button
+        class="page-btn next"
+        [attr.aria-label]="'Next page' | t"
+        (click)="goToPage(pageNum() + 1)"
+      >
         <span class="arrow">❯</span>
       </button>
     </div>

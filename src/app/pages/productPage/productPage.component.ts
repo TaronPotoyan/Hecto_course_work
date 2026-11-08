@@ -9,6 +9,7 @@ import { LayoutType, PriceType } from '../../models/type';
 import { FilterProducts } from '../../services/filterProductsService/filterProducts';
 import { FilterBy, ProductLayout, SortBy, ViewMode } from '../../models/enum';
 import { Helper } from '../../helpers/helperClass';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 const EMPTY_FILTERS: IFilterSettings = {
   productBrand: [],
@@ -28,7 +29,7 @@ const FILTER_KEYS: Partial<Record<FilterBy, keyof IFilterSettings>> = {
 
 @Component({
   selector: 'app-product-page',
-  imports: [NgClass, ShopProduct],
+  imports: [TranslatePipe, NgClass, ShopProduct],
   templateUrl: './productPage.component.html',
   styleUrl: './productPage.component.scss',
 })

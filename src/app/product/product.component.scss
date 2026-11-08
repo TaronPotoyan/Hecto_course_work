@@ -352,3 +352,53 @@ $star-empty: #e2e2fb;
     transform: translateX(-50%) translateY(0);
   }
 }
+
+// Phones: compact card that fits a two-column grid
+@media (max-width: $bp-sm) {
+  .product:not(.product--big) {
+    max-height: none;
+    .product__img {
+      height: auto;
+      aspect-ratio: 1;
+    }
+    .product__actions {
+      top: 8px;
+      left: 8px;
+      gap: 6px;
+    }
+    .icon-circle {
+      width: 28px;
+      height: 28px;
+    }
+    .view-details-btn {
+      bottom: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .product__fullIn {
+      padding: 12px 8px 14px;
+      .product-title,
+      .product-code,
+      .product-price {
+        font-size: 14px;
+      }
+      .product-code {
+        margin: 4px 0;
+      }
+      .trend-prices {
+        gap: 0.5rem;
+        margin-top: 0.4rem;
+      }
+    }
+  }
+  .product--big {
+    min-height: 0 !important;
+    .product__img {
+      height: 210px !important;
+    }
+  }
+  .product.is-hovered {
+    transform: none;
+  }
+}

@@ -8,7 +8,7 @@
       <span class="sub-title">{{ product().smallTitle }}</span>
       <h1 class="main-title heading-2">{{ product().title }}</h1>
       <p class="paragraph">{{ product().paragraph }}</p>
-      <button class="btn-primary" (click)="handleShop()">Shop Now</button>
+      <button class="btn-primary" (click)="handleShop()">{{ 'Shop Now' | t }}</button>
     </div>
 
     <div class="hero-image-container">
@@ -16,7 +16,7 @@
         <img [src]="product().imgUrl" [alt]="product().title" />
         <div class="discount-badge">
           <span>50%</span>
-          <span>Off</span>
+          <span>{{ 'Off' | t }}</span>
         </div>
       </div>
     </div>

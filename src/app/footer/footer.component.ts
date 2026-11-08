@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { NavigatorService } from '../services/navigatorService/navigatorService';
 import { SubscribeService } from '../services/subscribeService/subscribeService';
 import { Helper } from '../helpers/helperClass';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 @Component({
   selector: 'app-footer',
-  imports: [FormsModule],
+  imports: [TranslatePipe, FormsModule],
   templateUrl: 'footer.component.html',
   styleUrl: 'footer.component.scss',
 })

@@ -1,8 +1,10 @@
 // src/app/services/languageService/languageService.ts
 import { DOCUMENT, Injectable, PLATFORM_ID, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { TRANSLATIONS } from '../../i18n/translations';
 
 export type LanguageCode = 'en' | 'hy' | 'ru';
+export type TranslateParams = Record<string, string | number>;
 
 export const LANGUAGE_OPTIONS: { code: LanguageCode; label: string; short: string }[] = [
   { code: 'en', label: 'English', short: 'EN' },
@@ -33,6 +35,19 @@ export class LanguageService {
     } catch {
       // ignore unavailable storage
     }
+  }
+
+  /** Translates an English UI string into the current language (falls back to English). */
+  translate(key: string, params?: TranslateParams): string {
+    const lang = this.language();
+    const source = key.trim();
+    let text = lang === 'en' ? source : (TRANSLATIONS[lang][source] ?? source);
+    if (params) {
+      for (const [name, value] of Object.entries(params)) {
+        text = text.replaceAll(`{${name}}`, String(value));
+      }
+    }
+    return text;
   }
 
   labelFor(code: LanguageCode): string {

@@ -7,12 +7,13 @@ import { AppRoutes, NumberFormat } from '../../models/enum';
 import { BasketItemComponent } from './basketItem/basketItem.component';
 import { NavigatorService } from '../../services/navigatorService/navigatorService';
 import { ToastService } from '../../services/toastService/toastService';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-basket',
   templateUrl: './basketPage.component.html',
   styleUrl: './basketPage.component.scss',
-  imports: [BasketItemComponent, DecimalPipe, NgClass],
+  imports: [TranslatePipe, BasketItemComponent, DecimalPipe, NgClass],
 })
 export class BasketPageComponent {
   private localStorageService = inject(LocalStorageService);
@@ -34,10 +35,13 @@ export class BasketPageComponent {
   ]);
   readonly numberFormat = NumberFormat;
 
-  clearCart() {
-    if (confirm('Are you sure you want to clear your cart?')) {
-      this.localStorageService.clearBasket();
-    }
+  async clearCart() {
+    const ok = await this.toast.confirm(
+      'All items will be removed from your cart.',
+      'Clear your cart?',
+      'Yes, clear it',
+    );
+    if (ok) this.localStorageService.clearBasket();
   }
 
   checkout() {

@@ -19,7 +19,10 @@
     <div class="info-section">
       <h1 class="heading-3">{{ product.name }}</h1>
 
-      <div class="rating" [attr.aria-label]="product.rating + ' out of 5 stars'">
+      <div
+        class="rating"
+        [attr.aria-label]="'{rating} out of 5 stars' | t: { rating: product.rating }"
+      >
         @for (star of stars(); track $index) {
           <span class="fa fa-star star" [class.checked]="star"></span>
         }
@@ -35,22 +38,26 @@
       <dl class="meta">
         @if (product.brand) {
           <div>
-            <dt>Brand</dt>
+            <dt>{{ 'Brand' | t }}</dt>
             <dd>{{ product.brand }}</dd>
           </div>
         }
         @if (product.category) {
           <div>
-            <dt>Category</dt>
+            <dt>{{ 'Category' | t }}</dt>
             <dd>{{ product.category }}</dd>
           </div>
         }
       </dl>
 
       <div class="actions">
-        <button class="btn-primary" (click)="addToCart()">Add To Cart</button>
-        <button class="btn-outline" (click)="openCardForm()">Buy Now</button>
-        <button class="wishlist-btn" aria-label="Add to wishlist" (click)="addToWishlist()">
+        <button class="btn-primary" (click)="addToCart()">{{ 'Add To Cart' | t }}</button>
+        <button class="btn-outline" (click)="openCardForm()">{{ 'Buy Now' | t }}</button>
+        <button
+          class="wishlist-btn"
+          [attr.aria-label]="'Add to wishlist' | t"
+          (click)="addToWishlist()"
+        >
           <img class="icon-adaptive" src="Black-heart.svg" alt="" />
         </button>
       </div>
@@ -68,7 +75,7 @@
             [attr.aria-selected]="activeTab() === t"
             (click)="activeTab.set(t)"
           >
-            {{ t }}
+            {{ t | t }}
           </button>
         }
       </nav>
@@ -78,7 +85,7 @@
           @case (tab.Description) {
             <h2 class="heading-4">Varius tempor.</h2>
             <p class="paragraph">{{ product.description }}</p>
-            <h3 class="heading-4">More Details</h3>
+            <h3 class="heading-4">{{ 'More Details' | t }}</h3>
             <ul class="more-details">
               @for (detail of productMoreDetailsInfo; track $index) {
                 <li>
@@ -91,30 +98,33 @@
           @case (tab.AdditionalInfo) {
             <dl class="meta meta--table">
               <div>
-                <dt>Brand</dt>
+                <dt>{{ 'Brand' | t }}</dt>
                 <dd>{{ product.brand ?? '—' }}</dd>
               </div>
               <div>
-                <dt>Category</dt>
+                <dt>{{ 'Category' | t }}</dt>
                 <dd>{{ product.category ?? '—' }}</dd>
               </div>
               <div>
-                <dt>Type</dt>
+                <dt>{{ 'Type' | t }}</dt>
                 <dd>{{ product.type }}</dd>
               </div>
               <div>
-                <dt>Discount</dt>
+                <dt>{{ 'Discount' | t }}</dt>
                 <dd>{{ product.discountOffer ? product.discountOffer + '%' : '—' }}</dd>
               </div>
             </dl>
           }
           @case (tab.Reviews) {
             <p class="paragraph">
-              Rated {{ product.rating }} out of 5 by our customers. Written reviews are coming soon.
+              {{
+                'Rated {rating} out of 5 by our customers. Written reviews are coming soon.'
+                  | t: { rating: product.rating }
+              }}
             </p>
           }
           @case (tab.Video) {
-            <p class="paragraph">No video is available for this product yet.</p>
+            <p class="paragraph">{{ 'No video is available for this product yet.' | t }}</p>
           }
         }
       </div>
@@ -123,7 +133,7 @@
 
   @if (similarItems().length) {
     <section class="related-products container">
-      <h2 class="heading-2">Related Products</h2>
+      <h2 class="heading-2">{{ 'Related Products' | t }}</h2>
       <div class="products">
         @for (item of similarItems(); track item.id) {
           <app-product [product]="item" [typeProduct]="''"></app-product>
@@ -133,17 +143,19 @@
   }
 } @else if (notFound()) {
   <div class="state container">
-    <h1 class="heading-2">Product not found</h1>
-    <p class="paragraph">This product doesn't exist or is no longer available.</p>
-    <a class="btn-primary" routerLink="/products">Browse products</a>
+    <h1 class="heading-2">{{ 'Product not found' | t }}</h1>
+    <p class="paragraph">{{ "This product doesn't exist or is no longer available." | t }}</p>
+    <a class="btn-primary" routerLink="/products">{{ 'Browse products' | t }}</a>
   </div>
 } @else if (dbService.state() === 'error') {
   <div class="state container">
-    <p class="paragraph">Couldn't load this product. Is the API server running?</p>
-    <button class="btn-primary" (click)="dbService.load()">Retry</button>
+    <p class="paragraph">{{ "Couldn't load this product. Is the API server running?" | t }}</p>
+    <button class="btn-primary" (click)="dbService.load()">{{ 'Retry' | t }}</button>
   </div>
 } @else {
-  <div class="state container"><p class="paragraph">Loading…</p></div>
+  <div class="state container">
+    <p class="paragraph">{{ 'Loading…' | t }}</p>
+  </div>
 }
 
 @if (showCard()) {
@@ -151,27 +163,29 @@
     <div
       class="card-modal"
       role="dialog"
-      aria-label="Card details"
+      [attr.aria-label]="'Card details' | t"
       (click)="$event.stopPropagation()"
     >
-      <h3 class="heading-3">Enter Card Details</h3>
+      <h3 class="heading-3">{{ 'Enter Card Details' | t }}</h3>
       <form class="card-form" [formGroup]="paymentForm" (ngSubmit)="onPay()">
         @for (cartInfo of cartFormInfo; track cartInfo.name) {
           <div class="form-group">
-            <label [for]="'card-' + cartInfo.name">{{ cartInfo.labelValue }}</label>
+            <label [for]="'card-' + cartInfo.name">{{ cartInfo.labelValue | t }}</label>
             <input
               [id]="'card-' + cartInfo.name"
               [formControlName]="cartInfo.name"
               [type]="cartInfo.type"
-              [placeholder]="cartInfo.placeholder"
+              [placeholder]="cartInfo.placeholder | t"
               [attr.maxlength]="cartInfo.maxlength || null"
               [class.invalid]="isInvalid(cartInfo.name)"
             />
           </div>
         }
         <div class="form-actions">
-          <button type="submit" class="btn-primary">Pay Now</button>
-          <button type="button" class="btn-secondary" (click)="closeCardForm()">Cancel</button>
+          <button type="submit" class="btn-primary">{{ 'Pay Now' | t }}</button>
+          <button type="button" class="btn-secondary" (click)="closeCardForm()">
+            {{ 'Cancel' | t }}
+          </button>
         </div>
       </form>
     </div>

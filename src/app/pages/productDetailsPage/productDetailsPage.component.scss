@@ -339,9 +339,36 @@
     }
   }
   .tabs-nav {
-    gap: 0.75rem 1.5rem;
+    flex-wrap: nowrap;
+    gap: 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -16px;
+    padding-inline: 16px;
+    margin-bottom: 1.75rem;
+    &::-webkit-scrollbar {
+      display: none;
+    }
     button {
       font-size: 17px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+  // Add / Buy share the row, wishlist sits at the end
+  .actions {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 10px;
+    .btn-primary,
+    .btn-outline {
+      flex: 1;
+      min-width: 0;
+      padding-inline: 0.75rem;
+      white-space: nowrap;
+    }
+    .wishlist-btn {
+      flex-shrink: 0;
     }
   }
   .card-modal {

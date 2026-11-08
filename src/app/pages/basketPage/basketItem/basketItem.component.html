@@ -7,14 +7,14 @@
     <div class="product-details">
       <h3 class="product-name">{{ itemInp().name }}</h3>
       <p class="product-price">${{ itemInp().currentPrice | number: numberFormat.Currency }}</p>
-      <button type="button" class="remove-btn" (click)="remove()">Remove</button>
+      <button type="button" class="remove-btn" (click)="remove()">{{ 'Remove' | t }}</button>
     </div>
   </div>
   <div class="actions">
     <div class="quantity-selector">
       <button
         type="button"
-        aria-label="Decrease quantity"
+        [attr.aria-label]="'Decrease quantity' | t"
         (click)="updateCount(quantityAction.DecreaseByOne)"
       >
         −
@@ -22,7 +22,7 @@
       <span class="count" aria-live="polite">{{ quantity() }}</span>
       <button
         type="button"
-        aria-label="Increase quantity"
+        [attr.aria-label]="'Increase quantity' | t"
         (click)="updateCount(quantityAction.IncreaseByOne)"
       >
         +

@@ -8,10 +8,12 @@ import { LayoutType } from '../../../models/type';
 import { AppRoutes, ProductAction } from '../../../models/enum';
 import { NavigatorService } from '../../../services/navigatorService/navigatorService';
 import { ToastService } from '../../../services/toastService/toastService';
+import { TranslatePipe } from '../../../i18n/translate.pipe';
+import { LanguageService } from '../../../services/languageService/languageService';
 
 @Component({
   selector: 'app-shop-product',
-  imports: [CurrencyPipe, NgClass],
+  imports: [TranslatePipe, CurrencyPipe, NgClass],
   templateUrl: 'shopProduct.component.html',
   styleUrl: 'shopProduct.component.scss',
 })
@@ -19,6 +21,7 @@ export class ShopProduct {
   private localStorageService = inject(LocalStorageService);
   private navService = inject(NavigatorService);
   private toast = inject(ToastService);
+  private languageService = inject(LanguageService);
 
   readonly ratingsArr = new Array(5).fill(0).map((_, i) => i + 1);
   readonly productActions = ProductAction;
@@ -37,7 +40,11 @@ export class ShopProduct {
     }
 
     if (actionType === ProductAction.Like) {
-      this.toast.show(`${this.product().name} added to your wishlist`);
+      this.toast.show(
+        this.languageService.translate('{name} added to your wishlist', {
+          name: this.product().name,
+        }),
+      );
     }
 
     if (actionType === ProductAction.Zoom) {

@@ -29,17 +29,25 @@
     </p>
 
     <div class="actions">
-      <button type="button" aria-label="Add to cart" (click)="handleAction(productActions.Basket)">
+      <button
+        type="button"
+        [attr.aria-label]="'Add to cart' | t"
+        (click)="handleAction(productActions.Basket)"
+      >
         <img src="Basket-icon.svg" alt="" />
       </button>
       <button
         type="button"
-        aria-label="Add to wishlist"
+        [attr.aria-label]="'Add to wishlist' | t"
         (click)="handleAction(productActions.Like)"
       >
         <img src="heart-icon.svg" alt="" />
       </button>
-      <button type="button" aria-label="Zoom image" (click)="handleAction(productActions.Zoom)">
+      <button
+        type="button"
+        [attr.aria-label]="'Zoom image' | t"
+        (click)="handleAction(productActions.Zoom)"
+      >
         <img class="zoom-icon" src="Zoom-icon.svg" alt="" />
       </button>
     </div>
@@ -50,7 +58,7 @@
   <div class="zoom-overlay" (click)="toggleZoom(false)">
     <div class="zoom-content" (click)="$event.stopPropagation()">
       <img [src]="product().url" [alt]="product().name" />
-      <button class="close-btn" (click)="toggleZoom(false)">Close</button>
+      <button class="close-btn" (click)="toggleZoom(false)">{{ 'Close' | t }}</button>
     </div>
   </div>
 }

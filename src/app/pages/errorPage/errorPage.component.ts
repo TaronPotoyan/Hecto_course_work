@@ -4,9 +4,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { NavigatorService } from '../../services/navigatorService/navigatorService';
 import { AppRoutes } from '../../models/enum';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-error-page',
+  imports: [TranslatePipe],
   templateUrl: 'errorPage.component.html',
   styleUrl: 'errorPage.component.scss',
 })

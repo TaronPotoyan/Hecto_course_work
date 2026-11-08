@@ -2,6 +2,7 @@
 import { Injectable, afterNextRender, computed, inject, signal } from '@angular/core';
 import { IProduct } from '../../models/interface';
 import { ToastService } from '../toastService/toastService';
+import { LanguageService } from '../languageService/languageService';
 
 const STORAGE_KEY = 'Heckto';
 
@@ -11,6 +12,7 @@ const STORAGE_KEY = 'Heckto';
 export class LocalStorageService {
   private basket = signal<IProduct[]>([]);
   private toast = inject(ToastService);
+  private languageService = inject(LanguageService);
 
   /** Total number of units in the basket (for the header badge). */
   readonly basketCount = computed(() =>
@@ -62,14 +64,18 @@ export class LocalStorageService {
 
     if (exists) {
       this.updateQuantity(product.id, 1);
-      this.toast.success(`Another ${product.name} added to your cart`);
+      this.toast.success(
+        this.languageService.translate('Another {name} added to your cart', { name: product.name }),
+      );
       return;
     }
 
     const newItems = [...this.basket(), { ...product, quantity: 1 }];
     this.basket.set(newItems);
     this.syncToStorage(newItems);
-    this.toast.success(`${product.name} added to your cart`);
+    this.toast.success(
+      this.languageService.translate('{name} added to your cart', { name: product.name }),
+    );
   }
 
   private syncToStorage(items: IProduct[]) {

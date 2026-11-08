@@ -3,9 +3,11 @@ import { Component, inject, input } from '@angular/core';
 import { IDiscountProduct } from '../../models/interface';
 import { LocalStorageService } from '../../services/localstorageService/localStorageService';
 import { DataBase } from '../../services/dataBaseService/dataBase';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-discount',
+  imports: [TranslatePipe],
   templateUrl: './discount.component.html',
   styleUrl: './discount.component.scss',
 })

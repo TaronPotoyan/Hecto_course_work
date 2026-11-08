@@ -116,7 +116,7 @@
     padding: 40px 0 70px;
   }
   .hero-wrapper {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     padding: 0 16px;
     gap: 2rem;
     text-align: center;

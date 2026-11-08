@@ -2,12 +2,14 @@
 <div class="error-container">
   <div class="error-content container">
     <h1 class="heading-1">{{ errorCode() }}</h1>
-    <h2 class="heading-2">Oops! The page you requested was not found!</h2>
+    <h2 class="heading-2">{{ 'Oops! The page you requested was not found!' | t }}</h2>
     <p class="paragraph">
-      The page you are looking for might have been removed, had its name changed, or is temporarily
-      unavailable.
+      {{
+        'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.'
+          | t
+      }}
     </p>
 
-    <button class="btn-primary" (click)="goHome()">Back To Home</button>
+    <button class="btn-primary" (click)="goHome()">{{ 'Back To Home' | t }}</button>
   </div>
 </div>

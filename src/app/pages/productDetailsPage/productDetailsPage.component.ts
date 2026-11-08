@@ -12,10 +12,12 @@ import { ProductComponent } from '../../product/product.component';
 import { IFormInput } from '../../models/interface';
 import { Helper } from '../../helpers/helperClass';
 import { DEFAULT_STAR_COUNT, NumberFormat, ProductDetailTab } from '../../models/enum';
+import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LanguageService } from '../../services/languageService/languageService';
 
 @Component({
   selector: 'app-product-details-component',
-  imports: [ProductComponent, DecimalPipe, ReactiveFormsModule, RouterLink],
+  imports: [TranslatePipe, ProductComponent, DecimalPipe, ReactiveFormsModule, RouterLink],
   templateUrl: './productDetailsPage.component.html',
   styleUrl: './productDetailsPage.component.scss',
 })
@@ -24,6 +26,7 @@ export class ProductDetailsPageComponent {
   protected dbService = inject(DataBase);
   private basket = inject(LocalStorageService);
   private toast = inject(ToastService);
+  private languageService = inject(LanguageService);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly cartFormInfo: IFormInput[] = Helper.getCartFormInfo();
@@ -75,7 +78,10 @@ export class ProductDetailsPageComponent {
 
   addToWishlist() {
     const product = this.product();
-    if (product) this.toast.show(`${product.name} added to your wishlist`);
+    if (product)
+      this.toast.show(
+        this.languageService.translate('{name} added to your wishlist', { name: product.name }),
+      );
   }
 
   openCardForm() {

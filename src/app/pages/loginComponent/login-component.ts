@@ -5,19 +5,22 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/authService/authService';
 import { ToastService } from '../../services/toastService/toastService';
+import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LanguageService } from '../../services/languageService/languageService';
 
 type Mode = 'login' | 'register';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login-component.html',
-  imports: [ReactiveFormsModule],
+  imports: [TranslatePipe, ReactiveFormsModule],
   styleUrls: ['./login-component.scss'],
 })
 export class LoginPageComponent {
   private fb = inject(NonNullableFormBuilder);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private languageService = inject(LanguageService);
   protected auth = inject(AuthService);
 
   readonly socialProviders = ['Google', 'Facebook', 'GitHub'];
@@ -61,7 +64,7 @@ export class LoginPageComponent {
     request.subscribe({
       next: ({ user }) => {
         this.submitting.set(false);
-        this.toast.success(`Welcome, ${user.name}!`);
+        this.toast.success(this.languageService.translate('Welcome, {name}!', { name: user.name }));
         this.form.reset();
         this.router.navigate(['/']);
       },
@@ -77,7 +80,9 @@ export class LoginPageComponent {
   }
 
   socialLogin(provider: string) {
-    this.toast.show(`Sign in with ${provider} is coming soon`);
+    this.toast.show(
+      this.languageService.translate('Sign in with {provider} is coming soon', { provider }),
+    );
   }
 
   logout() {

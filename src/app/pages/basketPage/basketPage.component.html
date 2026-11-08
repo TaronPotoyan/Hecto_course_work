@@ -1,31 +1,33 @@
 <!-- src/app/pages/basketPage/basketPage.component.html -->
 @if (items().length > 0) {
   <div class="basket-container container">
-    <h1 class="heading-2 page-title">Shopping Cart</h1>
+    <h1 class="heading-2 page-title">{{ 'Shopping Cart' | t }}</h1>
     <div class="basket-layout">
       <div class="products-column">
         @for (item of items(); track item.id) {
           <app-basket-item [itemInp]="item" />
         }
         <div class="basket-actions">
-          <button class="btn-clear" (click)="clearCart()">Clear cart</button>
+          <button class="btn-clear" (click)="clearCart()">{{ 'Clear cart' | t }}</button>
         </div>
       </div>
 
       <aside class="summary-column">
-        <h2 class="summary-title">Cart Totals</h2>
+        <h2 class="summary-title">{{ 'Cart Totals' | t }}</h2>
         <div class="summary-card">
           @for (tableItem of summaryTable(); track tableItem.title) {
             <div class="summary-row" [ngClass]="tableItem.className">
-              <span>{{ tableItem.title }}</span>
+              <span>{{ tableItem.title | t }}</span>
               <span>${{ tableItem.value | number: numberFormat.Currency }}</span>
             </div>
           }
           <p class="shipping-info">
             <span class="dot"></span>
-            Shipping: ${{ SHIPPING_COST | number: numberFormat.Currency }}
+            {{ 'Shipping' | t }}: ${{ SHIPPING_COST | number: numberFormat.Currency }}
           </p>
-          <button class="btn-primary checkout" (click)="checkout()">Proceed to checkout</button>
+          <button class="btn-primary checkout" (click)="checkout()">
+            {{ 'Proceed to checkout' | t }}
+          </button>
         </div>
       </aside>
     </div>
@@ -33,7 +35,7 @@
 } @else {
   <div class="empty container">
     <img src="empty-basket.svg" alt="" class="empty__img" />
-    <h2 class="heading-2">Your cart is empty</h2>
-    <button class="btn-primary" (click)="startShopping()">Start Shopping</button>
+    <h2 class="heading-2">{{ 'Your cart is empty' | t }}</h2>
+    <button class="btn-primary" (click)="startShopping()">{{ 'Start Shopping' | t }}</button>
   </div>
 }

@@ -46,7 +46,7 @@
             <button
               type="button"
               class="options__trigger"
-              [attr.aria-label]="option.optionName"
+              [attr.aria-label]="option.optionName | t"
               (click)="handleMenuOption(option)"
             >
               <span class="hide-sm">{{ menuOptionLabel(option) }}</span>
@@ -72,20 +72,20 @@
       [class.open]="mobileMenuOpen()"
       [attr.aria-expanded]="mobileMenuOpen()"
       aria-controls="main-nav"
-      aria-label="Toggle navigation"
+      [attr.aria-label]="'Toggle navigation' | t"
       (click)="toggleMobileMenu()"
     >
       <span></span><span></span><span></span>
     </button>
 
     <div class="mainbar__collapse" id="main-nav" [class.open]="mobileMenuOpen()">
-      <nav aria-label="Main">
+      <nav [attr.aria-label]="'Main' | t">
         <ul class="nav-list">
           @for (navItem of navItems; track navItem.label) {
             @if (navItem.label !== routeMenue.Heckto) {
               <li class="nav__item" (click)="handleNavigation(navItem.route)">
                 <a [class.active]="isActiveNav(navItem.route, navItem.label)">
-                  {{ navItem.label }}
+                  {{ navItem.label | t }}
                 </a>
               </li>
             }
@@ -96,13 +96,13 @@
         <input
           type="search"
           name="searchQuery"
-          placeholder="Search products..."
-          aria-label="Search products"
+          [placeholder]="'Search products...' | t"
+          [attr.aria-label]="'Search products' | t"
           class="search__input"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
         />
-        <button type="submit" class="search__button" aria-label="Search">
+        <button type="submit" class="search__button" [attr.aria-label]="'Search' | t">
           <img src="Search-icon.svg" alt="" />
         </button>
       </form>
@@ -124,7 +124,7 @@
             type="button"
             class="dot"
             [class.active]="currentIndex() === $index"
-            [attr.aria-label]="'Show slide ' + ($index + 1)"
+            [attr.aria-label]="'Show slide {n}' | t: { n: $index + 1 }"
             (click)="goToSlide($index)"
           ></button>
         }

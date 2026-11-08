@@ -1,15 +1,15 @@
 <!-- src/app/pages/homePage/homePage.component.html -->
 @if (dbService.state() === 'error') {
   <div class="api-error container">
-    <p>We couldn't load the catalog. Please make sure the API server is running.</p>
-    <button class="btn-primary" (click)="dbService.load()">Retry</button>
+    <p>{{ "We couldn't load the catalog. Please make sure the API server is running." | t }}</p>
+    <button class="btn-primary" (click)="dbService.load()">{{ 'Retry' | t }}</button>
   </div>
 }
 
 <div class="section-container">
   <section class="features">
     <div class="section-title container">
-      <h2 class="heading-2">Featured Products</h2>
+      <h2 class="heading-2">{{ 'Featured Products' | t }}</h2>
     </div>
     <div class="product-container container">
       @for (item of featurdProducts(); track item.id) {
@@ -29,7 +29,7 @@
             type="button"
             class="dot"
             [class.active]="active"
-            [attr.aria-label]="'Featured page ' + ($index + 1)"
+            [attr.aria-label]="'Featured page {n}' | t: { n: $index + 1 }"
             (click)="featuredDotClick($index)"
           ></button>
         </li>
@@ -39,12 +39,12 @@
 
   <section class="latest-products">
     <div class="section-title container">
-      <h2 class="heading-2">Latest Products</h2>
+      <h2 class="heading-2">{{ 'Latest Products' | t }}</h2>
       <ul class="nav-list tabs">
         @for (item of navItems; track item.name) {
           <li class="nav__item">
             <a [class.active]="activeNavIndex() === $index" (click)="setActiveNav($index)">
-              {{ item.name }}
+              {{ item.name | t }}
             </a>
           </li>
         }
@@ -60,7 +60,7 @@
                   type="button"
                   class="icon-circle"
                   [class.zoom-btn]="action.type === productAction.Zoom"
-                  [attr.aria-label]="action.type"
+                  [attr.aria-label]="action.type | t"
                   (click)="$event.stopPropagation(); handleAction(action.type, product)"
                 >
                   <img [src]="action.iconUrl" alt="" />
@@ -83,7 +83,7 @@
             <div class="skeleton skeleton--tile"></div>
           }
         } @else {
-          <p class="paragraph">No products found.</p>
+          <p class="paragraph">{{ 'No products found.' | t }}</p>
         }
       }
     </div>
@@ -96,15 +96,15 @@
           <img [src]="chaire.url" [alt]="chaire.name" />
         </div>
         <div class="unique-Info">
-          <h2 class="heading-2">Unique Features Of Latest &amp; Trending Products</h2>
+          <h2 class="heading-2">{{ 'Unique Features Of Latest & Trending Products' | t }}</h2>
           <ul class="unique-info__cons">
             @for (info of uniqueInfoCons; track $index) {
-              <li>{{ info }}</li>
+              <li>{{ info | t }}</li>
             }
           </ul>
           <div class="action">
             <button class="btn-primary" (click)="handleAction(productAction.Basket, chaire)">
-              Add To Cart
+              {{ 'Add To Cart' | t }}
             </button>
             <div class="product-meta">
               <span>{{ chaire.name }}</span>
@@ -118,7 +118,7 @@
 
   <section class="trending-products">
     <div class="section-title container">
-      <h2 class="heading-2">Trending Products</h2>
+      <h2 class="heading-2">{{ 'Trending Products' | t }}</h2>
     </div>
     <div class="product-container container">
       @for (item of trandProducts(); track item.id) {
@@ -129,7 +129,7 @@
 
   <section class="discount-item">
     <div class="section-title container">
-      <h2 class="heading-2">Discount Item</h2>
+      <h2 class="heading-2">{{ 'Discount Item' | t }}</h2>
       <ul class="nav-list tabs">
         @for (item of discountNavItems; track item.type) {
           <li class="nav__item">
@@ -137,7 +137,7 @@
               [class.active]="activeDiscountNavIndex() === $index"
               (click)="setActiveDiscountNav($index)"
             >
-              {{ item.name }}
+              {{ item.name | t }}
             </a>
           </li>
         }
@@ -146,17 +146,17 @@
     @if (activeDiscount(); as product) {
       <div class="itemInfo container">
         <div class="shortInfo">
-          <h3 class="heading-3">20% Discount Of All Products</h3>
+          <h3 class="heading-3">{{ '20% Discount Of All Products' | t }}</h3>
           <h4 class="heading-4 primary-color">{{ product.smallTitle }}</h4>
           <p class="paragraph">{{ product.paragraph }}</p>
           <div class="extentions">
             @for (item of extentionsDiscountItems; track $index) {
               <div class="ext-item">
-                <span>{{ item }}</span>
+                <span>{{ item | t }}</span>
               </div>
             }
           </div>
-          <button class="btn-primary" (click)="shopNow()">Shop Now</button>
+          <button class="btn-primary" (click)="shopNow()">{{ 'Shop Now' | t }}</button>
         </div>
         <div class="item__img">
           <img [src]="product.imgUrl" [alt]="product.title" />
@@ -167,7 +167,7 @@
 
   <section class="top-categories">
     <div class="section-title container">
-      <h2 class="heading-2">Top Categories</h2>
+      <h2 class="heading-2">{{ 'Top Categories' | t }}</h2>
     </div>
     <div class="categories-grid container">
       @for (item of topCategories(); track item.id) {
@@ -185,25 +185,25 @@
 
   <section class="subscribe">
     <div class="subscribe__inner container">
-      <h2 class="heading-2">Get Latest Update By Subscribing To Our Newsletter</h2>
+      <h2 class="heading-2">{{ 'Get Latest Update By Subscribing To Our Newsletter' | t }}</h2>
       <form class="search subscribe__form" (ngSubmit)="subscribe()">
         <input
           type="email"
           name="newsletterEmail"
           class="search__input"
-          placeholder="Your email address"
-          aria-label="Email address"
+          [placeholder]="'Your email address' | t"
+          [attr.aria-label]="'Email address' | t"
           [ngModel]="newsletterEmail()"
           (ngModelChange)="newsletterEmail.set($event)"
         />
-        <button type="submit" class="search__button">Subscribe</button>
+        <button type="submit" class="search__button">{{ 'Subscribe' | t }}</button>
       </form>
     </div>
   </section>
 
   <section class="latest-blog">
     <div class="section-title container">
-      <h2 class="heading-2">Latest Blog</h2>
+      <h2 class="heading-2">{{ 'Latest Blog' | t }}</h2>
     </div>
     <div class="latest-blog__grid container">
       @for (item of homes(); track item.id) {
@@ -216,8 +216,8 @@
 @if (isZoomed()) {
   <div class="zoom-overlay" (click)="handleZoom(false, null)">
     <div class="zoom-content" (click)="$event.stopPropagation()">
-      <img [src]="url()" alt="Zoomed product" />
-      <button class="close-btn" (click)="handleZoom(false, null)">Close</button>
+      <img [src]="url()" [alt]="'Zoomed product' | t" />
+      <button class="close-btn" (click)="handleZoom(false, null)">{{ 'Close' | t }}</button>
     </div>
   </div>
 }

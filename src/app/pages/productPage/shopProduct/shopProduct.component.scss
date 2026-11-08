@@ -215,3 +215,56 @@
     transform: scale(1);
   }
 }
+
+// Phones: compact grid card for the two-column layout
+@media (max-width: $bp-sm) {
+  .product-card.grid {
+    max-height: none;
+    padding: 6px;
+    &:hover {
+      transform: none;
+    }
+    .image-container {
+      height: auto;
+      aspect-ratio: 1;
+      margin-bottom: 8px;
+    }
+    .content-container {
+      gap: 4px;
+      padding-inline: 2px;
+      .header {
+        gap: 2px;
+        h3 {
+          font-size: 16px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+        }
+        .rating {
+          gap: 2px;
+          font-size: 11px;
+        }
+      }
+      .pricing {
+        gap: 6px;
+        font-size: 15px;
+        flex-wrap: wrap;
+        .original-price {
+          font-size: 12px;
+        }
+      }
+      .description {
+        display: none;
+      }
+      .actions {
+        gap: 0;
+        margin-left: -8px;
+        button {
+          width: 36px;
+          height: 36px;
+        }
+      }
+    }
+  }
+}

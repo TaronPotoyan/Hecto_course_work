@@ -27,6 +27,7 @@ import {
 import { ActiveDropdownType } from '../models/type';
 import { MenuOptions, Currencies, AppRoutes, RouteMenuEnum, ThemeMode } from '../models/enum';
 import { Helper } from '../helpers/helperClass';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 const THEME_LABELS: Record<ThemeMode, string> = {
   [ThemeMode.Light]: '☀ Light',
@@ -36,7 +37,7 @@ const THEME_LABELS: Record<ThemeMode, string> = {
 
 @Component({
   selector: 'app-header',
-  imports: [DiscountComponent, FormsModule],
+  imports: [TranslatePipe, DiscountComponent, FormsModule],
   templateUrl: 'header.component.html',
   styleUrl: 'header.component.scss',
 })
@@ -78,7 +79,7 @@ export class HeaderComponent {
     },
     {
       id: 'theme' as const,
-      label: THEME_LABELS[this.theme.mode()],
+      label: this.languageService.translate(THEME_LABELS[this.theme.mode()]),
       data: Object.values(ThemeMode) as string[],
     },
   ]);
@@ -130,7 +131,7 @@ export class HeaderComponent {
   }
 
   dropdownItemLabel(menuId: ActiveDropdownType, item: string): string {
-    if (menuId === 'theme') return THEME_LABELS[item as ThemeMode];
+    if (menuId === 'theme') return this.languageService.translate(THEME_LABELS[item as ThemeMode]);
     if (menuId === 'lang') return this.languageService.labelFor(item as LanguageCode);
     return item;
   }
@@ -186,7 +187,7 @@ export class HeaderComponent {
     if (option.optionName === MenuOptions.Login && this.auth.user()) {
       return this.auth.user()!.name;
     }
-    return option.optionName;
+    return this.languageService.translate(option.optionName);
   }
 
   isBasket(option: IMenuOption): boolean {
@@ -203,7 +204,9 @@ export class HeaderComponent {
     if (!name.trim()) return;
     const id = this.filterService.findProductIdByName(name);
     if (id === null) {
-      this.toast.error(`No product found for "${name.trim()}"`);
+      this.toast.error(
+        this.languageService.translate('No product found for "{name}"', { name: name.trim() }),
+      );
       return;
     }
     this.searchQuery.set('');

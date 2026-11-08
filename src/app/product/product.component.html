@@ -13,7 +13,7 @@
       <button
         type="button"
         class="icon-circle"
-        [attr.aria-label]="action.type"
+        [attr.aria-label]="action.type | t"
         (click)="$event.stopPropagation(); handleProductAction(action.type)"
       >
         <img [src]="action.iconUrl" alt="" />
@@ -29,7 +29,7 @@
         'border-radius': typeProduct() === productType.Home ? '8px' : '0',
       }"
     />
-    <button class="view-details-btn" (click)="viewDetailes()">View Details</button>
+    <button class="view-details-btn" (click)="viewDetailes()">{{ 'View Details' | t }}</button>
   </div>
   @switch (typeProduct()) {
     @case (productType.Trend) {
@@ -57,7 +57,7 @@
               {{
                 product().date
                   ? (product().date | date: dateFormat.MediumDate)
-                  : dateFormat.NotAvailable
+                  : (dateFormat.NotAvailable | t)
               }}
             </p>
           </div>
@@ -67,13 +67,13 @@
           {{ product().title }}
         </p>
         <p class="home-description paragraph">{{ product().description }}</p>
-        <a class="link read-more-link" (click)="viewDetailes()">Read More</a>
+        <a class="link read-more-link" (click)="viewDetailes()">{{ 'Read More' | t }}</a>
       </div>
     }
     @default {
       <div class="product__fullIn">
         <h3 class="product-title">{{ product().name }}</h3>
-        <p class="product-code">Code - Y523{{ product().id }}</p>
+        <p class="product-code">{{ 'Code - Y523{id}' | t: { id: product().id } }}</p>
         <p class="product-price">${{ product().currentPrice | number: numberFormat.Currency }}</p>
       </div>
     }
@@ -84,7 +84,7 @@
   <div class="zoom-overlay" (click)="toggleZoom(false)">
     <div class="zoom-content" (click)="$event.stopPropagation()">
       <img [src]="product().url" [alt]="product().name" />
-      <button class="close-btn" (click)="toggleZoom(false)">Close</button>
+      <button class="close-btn" (click)="toggleZoom(false)">{{ 'Close' | t }}</button>
     </div>
   </div>
 }

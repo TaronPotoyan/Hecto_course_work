@@ -78,6 +78,7 @@ header {
   font-weight: 500;
   cursor: pointer;
   padding: 6px 0;
+  white-space: nowrap;
   img {
     width: 14px;
     height: 14px;
@@ -217,8 +218,9 @@ header {
 }
 
 .carousel-item {
-  min-width: 100%;
-  flex-shrink: 0;
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
 }
 
 .carousel-indicators {
@@ -317,10 +319,35 @@ header {
   }
 }
 
+@media (max-width: $bp-sm) {
+  .topbar {
+    min-height: 40px;
+  }
+  .contact__item {
+    font-size: 13px;
+  }
+  .options__list {
+    gap: 1rem;
+  }
+  .options__trigger {
+    font-size: 13px;
+    padding: 8px 0;
+  }
+  .option-icon img {
+    width: 18px;
+    height: 18px;
+  }
+  .mainbar {
+    min-height: 60px;
+  }
+  .brand {
+    font-size: 26px;
+  }
+}
+
 @media (max-width: 420px) {
+  // Keep only the mail icon so the theme picker + action icons fit on one line
   .contact__item span {
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: none;
   }
 }
