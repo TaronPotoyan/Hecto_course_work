@@ -1,0 +1,86 @@
+<!-- src/app/pages/blogPage/blogPostPage.component.html -->
+@if (post(); as post) {
+  <app-page-banner
+    [title]="post.title"
+    [crumbs]="[{ label: 'Blog', link: '/blog' }, { label: post.category }]"
+  />
+
+  <div class="container blog-layout">
+    <article class="article">
+      <div class="article__cover media-box">
+        <img [src]="post.image" alt="" />
+      </div>
+
+      <div class="meta">
+        <span class="meta__chip">{{ post.category | t }}</span>
+        <span>{{ 'By {author}' | t: { author: post.author } }}</span>
+        <span>{{ post.date | date: dateFormat }}</span>
+        <span>{{ '{n} min read' | t: { n: post.readMinutes } }}</span>
+      </div>
+
+      <p class="article__lead">{{ post.excerpt | t }}</p>
+      @for (paragraph of post.body; track $index) {
+        <p class="article__text">{{ paragraph }}</p>
+      }
+
+      <div class="article__footer">
+        <div class="tag-cloud">
+          @for (tag of post.tags; track tag) {
+            <span class="tag">{{ tag | t }}</span>
+          }
+        </div>
+        <button type="button" class="share-btn" (click)="copyLink()">
+          🔗 {{ 'Copy link' | t }}
+        </button>
+      </div>
+
+      <nav class="pager" [attr.aria-label]="'More articles' | t">
+        @if (previous(); as prev) {
+          <a class="pager__item" [routerLink]="['/blog', prev.slug]">
+            <span class="pager__label">← {{ 'Previous article' | t }}</span>
+            <span class="pager__title">{{ prev.title | t }}</span>
+          </a>
+        } @else {
+          <span></span>
+        }
+        @if (next(); as nxt) {
+          <a class="pager__item pager__item--next" [routerLink]="['/blog', nxt.slug]">
+            <span class="pager__label">{{ 'Next article' | t }} →</span>
+            <span class="pager__title">{{ nxt.title | t }}</span>
+          </a>
+        }
+      </nav>
+    </article>
+
+    <aside class="blog-sidebar">
+      <section class="widget">
+        <h3 class="widget__title">{{ 'Related Posts' | t }}</h3>
+        <ul class="recent-list">
+          @for (item of related(); track item.slug) {
+            <li>
+              <a [routerLink]="['/blog', item.slug]">
+                <span class="thumb"><img [src]="item.image" alt="" loading="lazy" /></span>
+                <span class="recent-text">
+                  <span class="recent-title">{{ item.title | t }}</span>
+                  <span class="recent-date">{{ item.date | date: dateFormat }}</span>
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="widget widget--accent">
+        <h3 class="widget__title">{{ 'Looking for something?' | t }}</h3>
+        <p>{{ 'Browse our full catalog of products and current discounts.' | t }}</p>
+        <a class="btn-primary" routerLink="/products">{{ 'Browse the Shop' | t }}</a>
+      </section>
+    </aside>
+  </div>
+} @else {
+  <app-page-banner title="Article not found" [crumbs]="[{ label: 'Blog', link: '/blog' }]" />
+  <div class="container not-found">
+    <p>{{ "This article doesn't exist or has been moved." | t }}</p>
+    <a class="btn-primary" routerLink="/blog">{{ 'Back to Blog' | t }}</a>
+  </div>
+}

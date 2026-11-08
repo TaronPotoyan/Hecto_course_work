@@ -6,6 +6,7 @@ import { errorHandler, notFound } from './lib/http.js';
 import { authRouter } from './routes/auth.js';
 import { catalogRouter } from './routes/catalog.js';
 import { chatRouter } from './routes/chat.js';
+import { contactRouter } from './routes/contact.js';
 import { subscribersRouter } from './routes/subscribers.js';
 
 export function createApp() {
@@ -29,6 +30,7 @@ export function createApp() {
   app.use('/api/auth', authRouter);
   app.use('/api/subscribers', subscribersRouter);
   app.use('/api/chat', chatRouter);
+  app.use('/api/contact', contactRouter);
 
   app.use(notFound);
   app.use(errorHandler);

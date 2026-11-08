@@ -1,0 +1,264 @@
+<!-- src/app/pages/profilePage/profilePage.component.html -->
+@if (auth.user(); as user) {
+  <section class="profile-hero">
+    <div class="container profile-hero__inner">
+      <div class="avatar" aria-hidden="true">{{ initials() }}</div>
+      <div class="identity">
+        <h1>{{ user.name }}</h1>
+        <p class="email">{{ user.email }}</p>
+        @if (profile()?.createdAt; as created) {
+          <p class="since">{{ 'Member since {date}' | t: { date: (created | date: dateFormat) ?? '' } }}</p>
+        }
+      </div>
+      <button type="button" class="btn-outline" (click)="logout()">{{ 'Sign Out' | t }}</button>
+    </div>
+  </section>
+
+  <div class="container profile-layout">
+    <nav class="tabs" role="tablist" [attr.aria-label]="'Account sections' | t">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          role="tab"
+          class="tab"
+          [class.active]="activeTab() === tab.id"
+          [attr.aria-selected]="activeTab() === tab.id"
+          (click)="selectTab(tab.id)"
+        >
+          <span class="tab__icon" aria-hidden="true">{{ tab.icon }}</span>
+          <span>{{ tab.label | t }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="panel" role="tabpanel">
+      @if (loadError()) {
+        <div class="notice notice--error" role="alert">
+          <span>{{ "We couldn't load your account details." | t }}</span>
+          <button type="button" class="link-btn" (click)="loadProfile()">{{ 'Retry' | t }}</button>
+        </div>
+      }
+
+      @switch (activeTab()) {
+        @case ('overview') {
+          <div class="stats">
+            <div class="stat">
+              <span class="stat__value">{{ basketCount() }}</span>
+              <span class="stat__label">{{ 'Items in cart' | t }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value">${{ basketTotal() | number: numberFormat.Currency }}</span>
+              <span class="stat__label">{{ 'Cart total' | t }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value stat__value--success">${{ basketSavings() | number: numberFormat.Currency }}</span>
+              <span class="stat__label">{{ 'You save' | t }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value">{{ memberDays() ?? '—' }}</span>
+              <span class="stat__label">{{ 'Days with Heckto' | t }}</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <h2>{{ 'Profile completion' | t }}</h2>
+              <span class="pct">{{ completion() }}%</span>
+            </div>
+            <div class="progress" role="progressbar" [attr.aria-valuenow]="completion()" aria-valuemin="0" aria-valuemax="100">
+              <span [style.width.%]="completion()"></span>
+            </div>
+            @if (completion() < 100) {
+              <p class="muted">
+                {{ 'Add your phone and delivery address to check out faster.' | t }}
+                <button type="button" class="link-btn" (click)="selectTab('details')">
+                  {{ 'Complete profile' | t }}
+                </button>
+              </p>
+            } @else {
+              <p class="muted">{{ 'Your profile is complete. Nice!' | t }}</p>
+            }
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <h2>{{ 'Your Cart' | t }}</h2>
+              @if (basketCount() > 0) {
+                <a class="link-btn" routerLink="/basket">{{ 'View cart' | t }} →</a>
+              }
+            </div>
+            @for (item of basketPreview(); track item.id) {
+              <a class="cart-row" [routerLink]="['/products', item.id]">
+                <span class="cart-row__img"><img [src]="item.url" alt="" /></span>
+                <span class="cart-row__name">{{ item.name }}</span>
+                <span class="cart-row__qty">× {{ item.quantity ?? 1 }}</span>
+                <span class="cart-row__price">${{ item.currentPrice * (item.quantity ?? 1) | number: numberFormat.Currency }}</span>
+              </a>
+            } @empty {
+              <div class="empty">
+                <img src="empty-basket.svg" alt="" />
+                <p>{{ 'Your cart is empty.' | t }}</p>
+                <a class="btn-primary" routerLink="/products">{{ 'Start Shopping' | t }}</a>
+              </div>
+            }
+            @if (basket().length > basketPreview().length) {
+              <p class="muted more">{{ '+{n} more items' | t: { n: basket().length - basketPreview().length } }}</p>
+            }
+          </div>
+
+          <div class="quick-links">
+            <a class="quick" routerLink="/products">
+              <span class="quick__icon quick__icon--primary" aria-hidden="true">🛍</span>
+              <span>{{ 'Browse the Shop' | t }}</span>
+            </a>
+            <a class="quick" routerLink="/blog">
+              <span class="quick__icon quick__icon--info" aria-hidden="true">✎</span>
+              <span>{{ 'Read our Blog' | t }}</span>
+            </a>
+            <a class="quick" routerLink="/contact">
+              <span class="quick__icon quick__icon--success" aria-hidden="true">✉</span>
+              <span>{{ 'Contact Support' | t }}</span>
+            </a>
+          </div>
+        }
+
+        @case ('details') {
+          <div class="card">
+            <div class="card__head">
+              <h2>{{ 'Personal Info' | t }}</h2>
+            </div>
+            <form [formGroup]="detailsForm" (ngSubmit)="saveDetails()" novalidate class="form">
+              <div class="grid-2">
+                <label class="field-group">
+                  <span class="label">{{ 'Full Name' | t }}*</span>
+                  <input class="field" type="text" formControlName="name" autocomplete="name" />
+                  @if (fieldInvalid('name')) {
+                    <small class="error-text">{{ 'Please enter your name.' | t }}</small>
+                  }
+                </label>
+                <label class="field-group">
+                  <span class="label">{{ 'Email Address' | t }}</span>
+                  <input class="field" type="email" [value]="user.email" disabled />
+                  <small class="hint">{{ "Email can't be changed." | t }}</small>
+                </label>
+                <label class="field-group">
+                  <span class="label">{{ 'Phone' | t }}</span>
+                  <input class="field" type="tel" formControlName="phone" autocomplete="tel" placeholder="+374 00 000000" />
+                  @if (fieldInvalid('phone')) {
+                    <small class="error-text">{{ 'Please enter a valid phone number.' | t }}</small>
+                  }
+                </label>
+                <label class="field-group">
+                  <span class="label">{{ 'Country' | t }}</span>
+                  <input class="field" type="text" formControlName="country" autocomplete="country-name" />
+                </label>
+                <label class="field-group">
+                  <span class="label">{{ 'City' | t }}</span>
+                  <input class="field" type="text" formControlName="city" autocomplete="address-level2" />
+                </label>
+                <label class="field-group">
+                  <span class="label">{{ 'Address' | t }}</span>
+                  <input class="field" type="text" formControlName="address" autocomplete="street-address" />
+                </label>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn-outline" [disabled]="detailsForm.pristine || savingDetails()" (click)="resetDetails()">
+                  {{ 'Cancel' | t }}
+                </button>
+                <button type="submit" class="btn-primary" [disabled]="detailsForm.pristine || savingDetails()">
+                  {{ (savingDetails() ? 'Saving…' : 'Save Changes') | t }}
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+
+        @case ('security') {
+          <div class="card">
+            <div class="card__head">
+              <h2>{{ 'Change Password' | t }}</h2>
+            </div>
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate class="form form--narrow">
+              <label class="field-group">
+                <span class="label">{{ 'Current Password' | t }}</span>
+                <input class="field" [type]="showPasswords() ? 'text' : 'password'" formControlName="currentPassword" autocomplete="current-password" />
+                @if (passwordInvalid('currentPassword')) {
+                  <small class="error-text">{{ 'Please enter your current password.' | t }}</small>
+                }
+              </label>
+              <label class="field-group">
+                <span class="label">{{ 'New Password' | t }}</span>
+                <input class="field" [type]="showPasswords() ? 'text' : 'password'" formControlName="newPassword" autocomplete="new-password" />
+                @if (passwordInvalid('newPassword')) {
+                  <small class="error-text">{{ 'Password must be at least 6 characters.' | t }}</small>
+                }
+              </label>
+              <label class="field-group">
+                <span class="label">{{ 'Confirm New Password' | t }}</span>
+                <input class="field" [type]="showPasswords() ? 'text' : 'password'" formControlName="confirmPassword" autocomplete="new-password" />
+                @if (passwordForm.hasError('mismatch') && passwordForm.controls.confirmPassword.touched) {
+                  <small class="error-text">{{ "Passwords don't match." | t }}</small>
+                }
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" [checked]="showPasswords()" (change)="showPasswords.set(!showPasswords())" />
+                <span>{{ 'Show passwords' | t }}</span>
+              </label>
+              @if (passwordError()) {
+                <div class="notice notice--error" role="alert">{{ passwordError() | t }}</div>
+              }
+              <div class="actions">
+                <button type="submit" class="btn-primary" [disabled]="savingPassword()">
+                  {{ (savingPassword() ? 'Saving…' : 'Update Password') | t }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <h2>{{ 'Session' | t }}</h2>
+            </div>
+            <p class="muted">{{ 'You are signed in on this device. Sign out when using a shared computer.' | t }}</p>
+            <div class="actions actions--start">
+              <button type="button" class="btn-outline btn-outline--danger" (click)="logout()">{{ 'Sign Out' | t }}</button>
+            </div>
+          </div>
+        }
+
+        @case ('preferences') {
+          <div class="card">
+            <div class="card__head">
+              <h2>{{ 'Language' | t }}</h2>
+            </div>
+            <div class="choices">
+              @for (lang of languages; track lang.code) {
+                <button type="button" class="choice" [class.active]="isLanguage(lang.code)" [attr.aria-pressed]="isLanguage(lang.code)" (click)="setLanguage(lang.code)">
+                  <span class="choice__short">{{ lang.short }}</span>
+                  <span>{{ lang.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__head">
+              <h2>{{ 'Theme' | t }}</h2>
+            </div>
+            <div class="choices">
+              @for (mode of themeModes; track mode.id) {
+                <button type="button" class="choice" [class.active]="theme.mode() === mode.id" [attr.aria-pressed]="theme.mode() === mode.id" (click)="setTheme(mode.id)">
+                  <span>{{ mode.label | t }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+} @else {
+  <div class="container loading" aria-busy="true">
+    <div class="skeleton skeleton--avatar"></div>
+    <div class="skeleton skeleton--line"></div>
+  </div>
+}

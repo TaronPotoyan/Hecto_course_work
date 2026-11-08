@@ -27,6 +27,19 @@ export function requireString(body: unknown, field: string, opts: { min?: number
   return trimmed;
 }
 
+/** Optional string field: missing/blank → null, otherwise trimmed and length-checked. */
+export function optionalString(body: unknown, field: string, max: number): string | null {
+  const value = (body as Record<string, unknown> | undefined)?.[field];
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string') throw new HttpError(400, `"${field}" must be a string`);
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > max) {
+    throw new HttpError(400, `"${field}" must be at most ${max} characters`);
+  }
+  return trimmed;
+}
+
 export function requireEmail(body: unknown, field = 'email') {
   const email = requireString(body, field, { max: 254 }).toLowerCase();
   if (!EMAIL_RE.test(email)) throw new HttpError(400, `"${field}" must be a valid email address`);

@@ -1,0 +1,155 @@
+<!-- src/app/pages/contactPage/contactPage.component.html -->
+<app-page-banner title="Contact Us" [crumbs]="[{ label: 'Contact' }]" />
+
+<div class="container contact">
+  <section class="intro">
+    <div class="intro__text">
+      <h2 class="section-title">{{ 'Information About Us' | t }}</h2>
+      <p>
+        {{
+          'Heckto is an online store for electronics, accessories and lifestyle products. We pick every item with care and our support team is happy to help you before and after your purchase.'
+            | t
+        }}
+      </p>
+      <div class="dots" aria-hidden="true">
+        <span class="dot dot--tertiary"></span>
+        <span class="dot dot--primary"></span>
+        <span class="dot dot--info"></span>
+      </div>
+    </div>
+
+    <div class="intro__ways">
+      <h2 class="section-title">{{ 'Contact Way' | t }}</h2>
+      <div class="ways">
+        @for (way of contactWays; track way.title) {
+          <div class="way">
+            <span class="way__icon way__icon--{{ way.color }}" aria-hidden="true">{{ way.icon }}</span>
+            <div>
+              <h3>{{ way.title | t }}</h3>
+              @for (line of way.lines; track line; let first = $first) {
+                @if (first && way.href) {
+                  <a [href]="way.href">{{ line }}</a>
+                } @else {
+                  <p>{{ line | t }}</p>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="get-in-touch">
+    <div class="form-card">
+      <h2 class="section-title">{{ 'Get In Touch' | t }}</h2>
+      <p class="muted">
+        {{ "Have a question about an order or a product? Send us a message and we'll reply within one business day." | t }}
+      </p>
+
+      @if (sent()) {
+        <div class="success" role="status">
+          <span class="success__icon" aria-hidden="true">✓</span>
+          <h3>{{ 'Message sent!' | t }}</h3>
+          <p>{{ "Thanks for reaching out. We'll get back to you soon." | t }}</p>
+          <button type="button" class="btn-primary" (click)="sendAnother()">
+            {{ 'Send another message' | t }}
+          </button>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+          <div class="row">
+            <label class="field-group">
+              <span class="sr-only">{{ 'Your Name' | t }}</span>
+              <input
+                class="field"
+                type="text"
+                formControlName="name"
+                autocomplete="name"
+                [placeholder]="('Your Name' | t) + '*'"
+              />
+              @if (showError('name')) {
+                <small class="error-text">{{ 'Please enter your name.' | t }}</small>
+              }
+            </label>
+            <label class="field-group">
+              <span class="sr-only">{{ 'Your E-mail' | t }}</span>
+              <input
+                class="field"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                [placeholder]="('Your E-mail' | t) + '*'"
+              />
+              @if (showError('email')) {
+                <small class="error-text">{{ 'Please enter a valid email address.' | t }}</small>
+              }
+            </label>
+          </div>
+          <label class="field-group">
+            <span class="sr-only">{{ 'Subject' | t }}</span>
+            <input class="field" type="text" formControlName="subject" [placeholder]="'Subject' | t" />
+          </label>
+          <label class="field-group">
+            <span class="sr-only">{{ 'Type Your Message' | t }}</span>
+            <textarea
+              class="field"
+              rows="6"
+              formControlName="message"
+              [attr.maxlength]="maxMessage"
+              [placeholder]="('Type Your Message' | t) + '*'"
+            ></textarea>
+            <span class="field-hint">
+              @if (showError('message')) {
+                <small class="error-text">{{ 'Message must be at least 10 characters.' | t }}</small>
+              } @else {
+                <span></span>
+              }
+              <small>{{ form.controls.message.value.length }}/{{ maxMessage }}</small>
+            </span>
+          </label>
+
+          @if (serverError()) {
+            <div class="server-error" role="alert">{{ serverError() | t }}</div>
+          }
+
+          <button type="submit" class="btn-primary" [disabled]="sending()">
+            {{ (sending() ? 'Sending…' : 'Send Mail') | t }}
+          </button>
+        </form>
+      }
+    </div>
+
+    <div class="map-card">
+      <iframe
+        [src]="mapUrl"
+        [title]="'Store location map' | t"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+      ></iframe>
+      <div class="hours">
+        <h3>{{ 'Opening Hours' | t }}</h3>
+        <dl>
+          <dt>{{ 'Monday – Friday' | t }}</dt>
+          <dd>9:00 – 18:00</dd>
+          <dt>{{ 'Saturday' | t }}</dt>
+          <dd>10:00 – 16:00</dd>
+          <dt>{{ 'Sunday' | t }}</dt>
+          <dd>{{ 'Closed' | t }}</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2 class="section-title">{{ 'Frequently Asked Questions' | t }}</h2>
+    <div class="faq__list">
+      @for (item of faqs; track item.q) {
+        <details class="faq__item">
+          <summary>{{ item.q | t }}</summary>
+          <p>{{ item.a | t }}</p>
+        </details>
+      }
+    </div>
+  </section>
+</div>

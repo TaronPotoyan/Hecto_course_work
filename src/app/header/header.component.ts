@@ -179,6 +179,10 @@ export class HeaderComponent {
       this.toast.show('Wishlist is coming soon');
       return;
     }
+    if (option.optionName === MenuOptions.Login && this.auth.user()) {
+      this.handleNavigation(AppRoutes.Profile);
+      return;
+    }
     this.handleNavigation(option.optionName);
   }
 

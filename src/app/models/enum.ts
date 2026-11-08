@@ -115,6 +115,9 @@ export enum AppRoutes {
   Heckto = 'heckto',
   Blog = 'blog',
   Contact = 'contact',
+  BlogPost = ':slug',
+  Profile = 'profile',
+  MyAccount = 'my-account',
   NotFound = '**',
 }
 

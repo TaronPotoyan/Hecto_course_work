@@ -2,7 +2,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { API_BASE_URL } from '../api';
 
 export interface IUser {
@@ -10,6 +10,16 @@ export interface IUser {
   name: string;
   email: string;
 }
+
+export interface IUserProfile extends IUser {
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  createdAt: string;
+}
+
+export type ProfileUpdate = Pick<IUserProfile, 'name' | 'phone' | 'address' | 'city' | 'country'>;
 
 interface IAuthResponse {
   token: string;
@@ -42,6 +52,23 @@ export class AuthService {
     return this.http
       .post<IAuthResponse>(`${this.apiUrl}/api/auth/register`, { name, email, password })
       .pipe(tap((res) => this.saveSession(res)));
+  }
+
+  getProfile(): Observable<IUserProfile> {
+    return this.http.get<IUserProfile>(`${this.apiUrl}/api/auth/me`);
+  }
+
+  updateProfile(changes: ProfileUpdate): Observable<IUserProfile> {
+    return this.http
+      .patch<IAuthResponse & { profile: IUserProfile }>(`${this.apiUrl}/api/auth/me`, changes)
+      .pipe(
+        tap(({ token, user }) => this.saveSession({ token, user })),
+        map(({ profile }) => profile),
+      );
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/api/auth/password`, { currentPassword, newPassword });
   }
 
   logout() {

@@ -1,0 +1,14 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone   TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS city    TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT;
+
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id          SERIAL PRIMARY KEY,
+  name        TEXT NOT NULL,
+  email       TEXT NOT NULL,
+  subject     TEXT,
+  message     TEXT NOT NULL,
+  user_id     INTEGER REFERENCES users (id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);

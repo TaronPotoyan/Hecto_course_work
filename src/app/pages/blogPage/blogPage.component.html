@@ -1,0 +1,158 @@
+<!-- src/app/pages/blogPage/blogPage.component.html -->
+<app-page-banner title="Blog" [crumbs]="[{ label: 'Blog' }]" />
+
+<div class="container blog-layout">
+  <div class="blog-main">
+    @if (featured(); as post) {
+      <article class="featured">
+        <a class="featured__media" [routerLink]="['/blog', post.slug]" [attr.aria-label]="post.title | t">
+          <img [src]="post.image" alt="" />
+          <span class="badge">{{ 'Featured' | t }}</span>
+        </a>
+        <div class="featured__body">
+          <div class="meta">
+            <span class="meta__chip">{{ post.category | t }}</span>
+            <span>{{ post.author }}</span>
+            <span>{{ post.date | date: dateFormat }}</span>
+            <span>{{ '{n} min read' | t: { n: post.readMinutes } }}</span>
+          </div>
+          <h2 class="featured__title">
+            <a [routerLink]="['/blog', post.slug]">{{ post.title | t }}</a>
+          </h2>
+          <p class="excerpt">{{ post.excerpt | t }}</p>
+          <a class="btn-primary" [routerLink]="['/blog', post.slug]">{{ 'Read More' | t }}</a>
+        </div>
+      </article>
+    }
+
+    @if (isFiltering()) {
+      <div class="filter-bar">
+        <span>{{ '{n} articles found' | t: { n: filtered().length } }}</span>
+        <button type="button" class="link-btn" (click)="clearFilters()">
+          {{ 'Clear filters' | t }}
+        </button>
+      </div>
+    }
+
+    <div class="post-grid">
+      @for (post of gridPosts(); track post.slug) {
+        <article class="post-card">
+          <a class="post-card__media" [routerLink]="['/blog', post.slug]" [attr.aria-label]="post.title | t">
+            <img [src]="post.image" alt="" loading="lazy" />
+          </a>
+          <div class="post-card__body">
+            <div class="meta">
+              <span class="meta__chip">{{ post.category | t }}</span>
+              <span>{{ post.date | date: dateFormat }}</span>
+            </div>
+            <h3 class="post-card__title">
+              <a [routerLink]="['/blog', post.slug]">{{ post.title | t }}</a>
+            </h3>
+            <p class="excerpt">{{ post.excerpt | t }}</p>
+            <div class="post-card__footer">
+              <span class="author">{{ post.author }}</span>
+              <a class="read-more" [routerLink]="['/blog', post.slug]">{{ 'Read More' | t }} →</a>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty">
+          <p>{{ 'No articles match your search.' | t }}</p>
+          <button type="button" class="btn-primary" (click)="clearFilters()">
+            {{ 'Show all articles' | t }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <aside class="blog-sidebar">
+    <section class="widget">
+      <h3 class="widget__title">{{ 'Search' | t }}</h3>
+      <input
+        type="search"
+        class="field"
+        [placeholder]="'Search articles...' | t"
+        [attr.aria-label]="'Search articles' | t"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </section>
+
+    <section class="widget">
+      <h3 class="widget__title">{{ 'Categories' | t }}</h3>
+      <ul class="category-list">
+        <li>
+          <button type="button" [class.active]="!activeCategory()" (click)="selectCategory(null)">
+            <span>{{ 'All' | t }}</span><span class="count">{{ posts.length }}</span>
+          </button>
+        </li>
+        @for (cat of categories; track cat.name) {
+          <li>
+            <button
+              type="button"
+              [class.active]="activeCategory() === cat.name"
+              [attr.aria-pressed]="activeCategory() === cat.name"
+              (click)="selectCategory(cat.name)"
+            >
+              <span>{{ cat.name | t }}</span><span class="count">{{ cat.count }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="widget">
+      <h3 class="widget__title">{{ 'Recent Posts' | t }}</h3>
+      <ul class="recent-list">
+        @for (post of recentPosts; track post.slug) {
+          <li>
+            <a [routerLink]="['/blog', post.slug]">
+              <span class="thumb"><img [src]="post.image" alt="" loading="lazy" /></span>
+              <span class="recent-text">
+                <span class="recent-title">{{ post.title | t }}</span>
+                <span class="recent-date">{{ post.date | date: dateFormat }}</span>
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="widget">
+      <h3 class="widget__title">{{ 'Tags' | t }}</h3>
+      <div class="tag-cloud">
+        @for (tag of tags; track tag) {
+          <button
+            type="button"
+            class="tag"
+            [class.active]="activeTag() === tag"
+            [attr.aria-pressed]="activeTag() === tag"
+            (click)="selectTag(tag)"
+          >
+            {{ tag | t }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="widget widget--accent">
+      <h3 class="widget__title">{{ 'Newsletter' | t }}</h3>
+      <p>{{ 'Get new articles and deals straight to your inbox.' | t }}</p>
+      <form (ngSubmit)="subscribe()">
+        <input
+          type="email"
+          name="email"
+          class="field"
+          [placeholder]="'Enter Email Address' | t"
+          [attr.aria-label]="'Email address' | t"
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+        />
+        <button type="submit" class="btn-primary" [disabled]="subscribing()">
+          {{ 'Subscribe' | t }}
+        </button>
+      </form>
+    </section>
+  </aside>
+</div>

@@ -19,6 +19,10 @@ export const routes: Routes = [
     redirectTo: AppRoutes.Home,
   },
   {
+    path: AppRoutes.Heckto,
+    redirectTo: AppRoutes.Home,
+  },
+  {
     path: AppRoutes.Products,
     children: [
       {
@@ -38,6 +42,35 @@ export const routes: Routes = [
   {
     path: AppRoutes.Basket,
     component: BasketPageComponent,
+  },
+  {
+    path: AppRoutes.Profile,
+    loadComponent: () =>
+      import('./pages/profilePage/profilePage.component').then((m) => m.ProfilePageComponent),
+  },
+  {
+    path: AppRoutes.MyAccount,
+    redirectTo: AppRoutes.Profile,
+  },
+  {
+    path: AppRoutes.Blog,
+    children: [
+      {
+        path: AppRoutes.Home,
+        loadComponent: () =>
+          import('./pages/blogPage/blogPage.component').then((m) => m.BlogPageComponent),
+      },
+      {
+        path: AppRoutes.BlogPost,
+        loadComponent: () =>
+          import('./pages/blogPage/blogPostPage.component').then((m) => m.BlogPostPageComponent),
+      },
+    ],
+  },
+  {
+    path: AppRoutes.Contact,
+    loadComponent: () =>
+      import('./pages/contactPage/contactPage.component').then((m) => m.ContactPageComponent),
   },
   {
     path: AppRoutes.NotFound,

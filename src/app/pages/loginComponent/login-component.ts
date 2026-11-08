@@ -29,6 +29,11 @@ export class LoginPageComponent {
   submitting = signal(false);
   serverError = signal<string | null>(null);
 
+  constructor() {
+    // Already signed in: the account lives on the profile page.
+    if (this.auth.user()) this.router.navigate(['/profile'], { replaceUrl: true });
+  }
+
   form = this.fb.group({
     name: [''],
     email: ['', [Validators.required, Validators.email]],
@@ -66,7 +71,7 @@ export class LoginPageComponent {
         this.submitting.set(false);
         this.toast.success(this.languageService.translate('Welcome, {name}!', { name: user.name }));
         this.form.reset();
-        this.router.navigate(['/']);
+        this.router.navigate(['/profile']);
       },
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
