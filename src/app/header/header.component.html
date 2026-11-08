@@ -1,94 +1,132 @@
 <!-- src/app/header/header.component.html -->
-
 <header>
   <div class="infoWrapper">
-    <div class="container height">
-      <div class="genInfo">
-        <div class="contact">
-          <div class="email">
-            <img src="white-Email.svg" class="icon" />
-            <a href="mailto:mhhasanul@gmail.com">mhhasanul@gmail.com</a>
-          </div>
-          <div class="call">
-            <img src="white-call.svg" class="icon" />
-            <p>(12345)67890</p>
-          </div>
-        </div>
+    <div class="container topbar">
+      <div class="contact">
+        <a class="contact__item" href="mailto:mhhasanul@gmail.com">
+          <img src="white-Email.svg" class="icon" alt="" />
+          <span>mhhasanul@gmail.com</span>
+        </a>
+        <a class="contact__item contact__phone" href="tel:1234567890">
+          <img src="white-call.svg" class="icon" alt="" />
+          <span>(12345)67890</span>
+        </a>
       </div>
-      <div class="options">
-        <ul class="options__list">
-          @for (menu of dropdownConfigs(); track menu.id) {
-            <li class="options__item dropdown" (click)="toggleDropdown(menu.id)">
+      <ul class="options__list">
+        @for (menu of dropdownConfigs(); track menu.id) {
+          <li class="options__item dropdown" [class.hide-sm]="menu.id !== 'theme'">
+            <button
+              type="button"
+              class="options__trigger"
+              [attr.aria-expanded]="activeDropdown() === menu.id"
+              aria-haspopup="listbox"
+              (click)="toggleDropdown(menu.id)"
+            >
               <span>{{ menu.label }}</span>
-              <img
-                src="white-arrow.svg"
-                alt="arrow"
-                [class.rotate]="activeDropdown() === menu.id"
-              />
-              @if (activeDropdown() === menu.id) {
-                <ul class="dropdown-menu">
-                  @for (item of menu.data; track item) {
-                    <li (click)="selectItem(menu.id, item); $event.stopPropagation()">
-                      {{ item }}
-                    </li>
-                  }
-                </ul>
-              }
-            </li>
-          }
-          @for (option of menuOptions; track option) {
-            <li class="options__item" (click)="handleNavigation(option.optionName)">
-              <a>{{ isBasket(option) ? '' : option.optionName }}</a>
-              <img [src]="option.optionImg" [alt]="option.optionName" />
-            </li>
-          }
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="container">
-    <nav>
-      <ul class="nav-list container">
-        @for (navItem of navItems; track $index) {
-          <li
-            class="nav__item"
-            [class.big]="navItem.label === routeMenue.Heckto"
-            (click)="handleNavigation(navItem.route)"
-          >
-            <a [class.active]="isActiveNav(navItem.route,navItem.label) ">
-              {{ navItem.label }}
-            </a>
+              <img src="white-arrow.svg" alt="" [class.rotate]="activeDropdown() === menu.id" />
+            </button>
+            @if (activeDropdown() === menu.id) {
+              <ul class="dropdown-menu" role="listbox">
+                @for (item of menu.data; track item) {
+                  <li
+                    role="option"
+                    [attr.aria-selected]="isSelected(menu.id, item)"
+                    [class.selected]="isSelected(menu.id, item)"
+                    (click)="selectItem(menu.id, item); $event.stopPropagation()"
+                  >
+                    {{ dropdownItemLabel(menu.id, item) }}
+                  </li>
+                }
+              </ul>
+            }
           </li>
         }
-
+        @for (option of menuOptions; track option.optionName) {
+          <li class="options__item">
+            <button
+              type="button"
+              class="options__trigger"
+              [attr.aria-label]="option.optionName"
+              (click)="handleMenuOption(option)"
+            >
+              <span class="hide-sm">{{ menuOptionLabel(option) }}</span>
+              <span class="option-icon">
+                <img [src]="option.optionImg" alt="" />
+                @if (isBasket(option) && basket.basketCount() > 0) {
+                  <span class="badge">{{ basket.basketCount() }}</span>
+                }
+              </span>
+            </button>
+          </li>
+        }
       </ul>
-    </nav>
-    <form class="search" (ngSubmit)="handleSearch()">
-      <input
-        type="text"
-        name="searchQuery"
-        placeholder="Search..."
-        class="search__input"
-        [(ngModel)]="searchQuery"
-      />
-      <button type="submit" class="search__button">
-        <img src="Search-icon.svg" alt="" class="search__button" />
-      </button>
-    </form>
+    </div>
   </div>
-  @if (showHero()) {
+
+  <div class="container mainbar">
+    <a class="brand" (click)="handleNavigation(routeMenue.Heckto)">Heckto</a>
+
+    <button
+      type="button"
+      class="burger"
+      [class.open]="mobileMenuOpen()"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      aria-controls="main-nav"
+      aria-label="Toggle navigation"
+      (click)="toggleMobileMenu()"
+    >
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="mainbar__collapse" id="main-nav" [class.open]="mobileMenuOpen()">
+      <nav aria-label="Main">
+        <ul class="nav-list">
+          @for (navItem of navItems; track navItem.label) {
+            @if (navItem.label !== routeMenue.Heckto) {
+              <li class="nav__item" (click)="handleNavigation(navItem.route)">
+                <a [class.active]="isActiveNav(navItem.route, navItem.label)">
+                  {{ navItem.label }}
+                </a>
+              </li>
+            }
+          }
+        </ul>
+      </nav>
+      <form class="search" role="search" (ngSubmit)="handleSearch()">
+        <input
+          type="search"
+          name="searchQuery"
+          placeholder="Search products..."
+          aria-label="Search products"
+          class="search__input"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+        <button type="submit" class="search__button" aria-label="Search">
+          <img src="Search-icon.svg" alt="" />
+        </button>
+      </form>
+    </div>
+  </div>
+
+  @if (showHero() && discountes().length) {
     <div class="hero-section">
       <div class="carousel-track" [style.transform]="getTransform()">
-        @for (item of discountes; track item._id) {
+        @for (item of discountes(); track item._id) {
           <div class="carousel-item">
             <app-discount [product]="item"></app-discount>
           </div>
         }
       </div>
       <div class="carousel-indicators">
-        @for (item of discountes; track $index) {
-          <span class="dot" [class.active]="currentIndex() === $index" (click)="goToSlide($index)">
-          </span>
+        @for (item of discountes(); track $index) {
+          <button
+            type="button"
+            class="dot"
+            [class.active]="currentIndex() === $index"
+            [attr.aria-label]="'Show slide ' + ($index + 1)"
+            (click)="goToSlide($index)"
+          ></button>
         }
       </div>
     </div>

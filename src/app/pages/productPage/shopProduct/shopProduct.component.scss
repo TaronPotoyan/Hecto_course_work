@@ -3,20 +3,20 @@
 @use '../../../styles/variables' as *;
 @use '../../../styles/mixins' as *;
 
-
 .product-card {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: $surface;
   border-radius: 8px;
-  transition: all 0.3s ease-in-out; 
+  transition: all 0.3s ease-in-out;
+  width: 100%;
   max-width: 300px;
   padding: 0.5rem;
   cursor: pointer;
   max-height: 448px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: $shadow-sm;
   &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: $shadow-md;
     transform: translateY(-5px);
   }
   .image-container {
@@ -28,6 +28,7 @@
     margin-bottom: 15px;
     overflow: hidden;
     width: 100%;
+    background: $surface-muted;
     img {
       max-width: 100%;
       width: 100%;
@@ -46,14 +47,14 @@
       gap: 5px;
       h3 {
         margin: 0;
-        color: #151875;
+        color: $text-strong;
         font-size: 22px;
         font-weight: 700;
       }
       .rating {
         display: flex;
         gap: 0.75rem;
-        color: #e2e2e2;
+        color: $grey-2;
         font-size: 14px;
         .checked {
           color: #ffc416;
@@ -66,7 +67,7 @@
       gap: 12px;
       font-size: 18px;
       .current-price {
-        color: #151875;
+        color: $text-strong;
         font-weight: 600;
       }
       .original-price {
@@ -108,11 +109,17 @@
           height: 16px;
           object-fit: contain;
           transition: transform 0.2s ease;
+          &.zoom-icon {
+            transform: scale(2.2);
+          }
         }
         &:hover {
           background-color: $grey-2;
           img {
             transform: scale(1.1);
+            &.zoom-icon {
+              transform: scale(2.4);
+            }
           }
         }
       }
@@ -124,9 +131,17 @@
     padding: 20px;
     gap: 30px;
     .image-container {
-      flex: 0 0 320px;
+      flex: 0 0 min(320px, 40%);
       height: 220px;
       margin-bottom: 0;
+    }
+    @media (max-width: $bp-sm) {
+      flex-direction: column;
+      gap: 12px;
+      padding: 0.5rem;
+      .image-container {
+        flex-basis: auto;
+      }
     }
     .content-container {
       flex: 1;
@@ -145,7 +160,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(16, 23, 80, 0.85);
+  padding: 16px;
+  background: var(--color-overlay);
   display: flex;
   justify-content: center;
   align-items: center;

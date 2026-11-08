@@ -8,6 +8,7 @@ import * as Enums from '../models/enum';
 
 import { LocalStorageService } from '../services/localstorageService/localStorageService';
 import { NavigatorService } from '../services/navigatorService/navigatorService';
+import { ToastService } from '../services/toastService/toastService';
 
 @Component({
   selector: 'app-product',
@@ -18,6 +19,7 @@ import { NavigatorService } from '../services/navigatorService/navigatorService'
 export class ProductComponent {
   private navService = inject(NavigatorService);
   private localStorageService = inject(LocalStorageService);
+  private toast = inject(ToastService);
 
   readonly productType = Enums.ProductDescription;
   readonly dateFormat = Enums.DateFormat;
@@ -26,14 +28,12 @@ export class ProductComponent {
     { type: Enums.ProductAction.Like, iconUrl: Enums.ProductActionIcons.LikeIcon },
     { type: Enums.ProductAction.Zoom, iconUrl: Enums.ProductActionIcons.ZoomIcon },
   ];
-  readonly doteColors = ['pink', 'blue', 'navy'];
 
   product = input.required<IProduct>();
   typeProduct = input<string>('Tech');
   isHovered = signal(false);
   numberFormat = Enums.NumberFormat;
-  isZoomed = false;
-  basket!: IProduct[];
+  isZoomed = signal(false);
 
   onHover(state: boolean) {
     this.isHovered.set(state);
@@ -51,17 +51,17 @@ export class ProductComponent {
     }
 
     if (actionType === Enums.ProductAction.Like) {
-      alert('Liked');
+      this.toast.show(`${this.product().name} added to your wishlist`);
       return;
     }
 
     if (actionType === Enums.ProductAction.Zoom) {
-      this.toggleZoom(!this.isZoomed);
+      this.toggleZoom(!this.isZoomed());
     }
   }
 
-  toggleZoom(event: boolean) {
-    this.isZoomed = event;
+  toggleZoom(show: boolean) {
+    this.isZoomed.set(show);
   }
 
   private addToBasket(item: IProduct) {

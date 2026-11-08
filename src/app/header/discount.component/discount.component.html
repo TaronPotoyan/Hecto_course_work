@@ -1,15 +1,13 @@
 <!-- src/app/header/discount.component/discount.component.html -->
 <div class="hero-section">
-  <div class="decorative-lamp">
-    <img src="hero-light.svg" alt="lamp" />
+  <div class="decorative-lamp" aria-hidden="true">
+    <img src="hero-light.svg" alt="" />
   </div>
   <div class="hero-wrapper">
     <div class="hero-content">
       <span class="sub-title">{{ product().smallTitle }}</span>
-      <h1 class="main-title heading-2">{{ product().title }} <br /></h1>
-      <p class="paragraph">
-        {{ product().paragraph }}
-      </p>
+      <h1 class="main-title heading-2">{{ product().title }}</h1>
+      <p class="paragraph">{{ product().paragraph }}</p>
       <button class="btn-primary" (click)="handleShop()">Shop Now</button>
     </div>
 

@@ -1,0 +1,60 @@
+// src/app/styles/_theme.scss
+// Design tokens for light and dark themes. The active theme is set as
+// `data-theme="light|dark"` on <html> by ThemeService (and by an inline
+// script in index.html before first paint to avoid a flash).
+
+@mixin light-tokens {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8f8fd;
+  --color-surface-muted: #f6f7fb;
+  --color-soft: #e5e0fc;
+  --color-border: #e7e6ef;
+  --color-hero: #f2f0ff;
+  --color-text: #101750;
+  --color-text-strong: #151875;
+  --color-text-muted: #8a8fb9;
+  --color-cycle: #10175026;
+  --color-overlay: rgba(16, 23, 80, 0.85);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15);
+  --icon-filter: none;
+}
+
+@mixin dark-tokens {
+  color-scheme: dark;
+  --color-bg: #0d0f22;
+  --color-surface: #161935;
+  --color-surface-alt: #121430;
+  --color-surface-muted: #1d2145;
+  --color-soft: #262a55;
+  --color-border: #2c3064;
+  --color-hero: #14173a;
+  --color-text: #e6e7ff;
+  --color-text-strong: #f3f3ff;
+  --color-text-muted: #9ca1d0;
+  --color-cycle: #ffffff14;
+  --color-overlay: rgba(5, 6, 20, 0.88);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
+  // Turns dark navy line icons light on dark backgrounds
+  --icon-filter: invert(1) brightness(1.6) saturate(0.4);
+}
+
+:root {
+  @include light-tokens;
+}
+
+// No JS / before ThemeService runs: follow the OS preference
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}

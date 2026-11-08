@@ -1,24 +1,19 @@
 // src/app/header/discount.component/discount.component.scss
 @use '../../styles/variables' as *;
-@use '../../styles/_typography' as *;
 
 :host {
   display: block;
-  background-color: #f2f0ff;
+  background-color: $hero-section;
 }
 
 .hero-section {
   position: relative;
-  height: 764px;
+  min-height: 640px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   overflow: hidden;
-  background-color: #f2f0ff;
-  @media (max-width: 768px) {
-    height: auto;
-    padding: 80px 0;
-  }
+  background-color: $hero-section;
+  padding: 60px 0 80px;
 }
 
 .decorative-lamp {
@@ -28,70 +23,30 @@
   z-index: 1;
   animation: slideFromTop 1.5s cubic-bezier(0.16, 1, 0.3, 1);
   img {
-    max-width: 380px;
+    max-width: 300px;
     height: auto;
-    @media (max-width: 1440px) {
-      max-width: 300px;
-    }
-    @media (max-width: 1200px) {
-      max-width: 150px;
-    }
-    @media (max-width: 1024px) {
-      display: none;
-    }
   }
 }
 
 .hero-wrapper {
-  max-width: 1140px;
-  margin: 0 auto;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: relative;
   z-index: 2;
-  gap: 4rem;
-  padding: 0 1rem;
-  @media (max-width: 1600px) {
-    padding-left: 14rem;
-  }
-  @media (min-width: 1700) {
-    padding: 0 12rem;
-  }
+  max-width: 1140px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px 0 clamp(16px, 14vw, 220px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 3rem;
 }
 
 .hero-content {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  animation: fadeInUp 1s ease-out;
-  @media (max-width: 992px) {
-    align-items: center;
-    text-align: center;
-    order: 2;
-  }
-  .btn-primary {
-    align-self: flex-start;
-    @media (max-width: 992px) {
-      align-self: center;
-    }
-  }
-}
-
-.hero-content {
-  flex: 1.2;
-  display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   gap: 1.2rem;
   animation: fadeInUp 1s ease-out;
-  @media (max-width: 1200px) {
-    padding-left: 8rem;
-  }
-  @media (max-width: 992px) {
-    padding-left: 0;
-    align-items: center;
-    order: 2;
-  }
   .sub-title {
     color: $primary;
     font-size: 16px;
@@ -99,55 +54,38 @@
   }
   .main-title {
     color: $grey-4;
-    margin: 0;
-    width: 500px;
-    @media (max-width: 576px) {
-      font-size: 2.5rem;
-    }
+    white-space: pre-line;
+    max-width: 520px;
   }
-  .btn-primary {
-    align-self: flex-start;
-    @media (max-width: 992px) {
-      align-self: center;
-    }
+  .paragraph {
+    max-width: 480px;
   }
 }
 
 .hero-image-container {
-  flex: 1;
   display: flex;
-  justify-content: flex-end;
-  position: relative;
-  animation: fadeInRight 2s ease;
-  @media (max-width: 992px) {
-    justify-content: center;
-    order: 1;
-    width: 100%;
-  }
+  justify-content: center;
+  animation: fadeInRight 1.5s ease;
   .image-wrapper {
     position: relative;
-    display: inline-block;
-    width: 300%;
+    width: 100%;
+    max-width: 560px;
     img {
-      position: relative;
-      min-width: 120px;
+      display: block;
+      width: 100%;
       height: auto;
-      z-index: 1;
-      @media (max-width: 576px) {
-        max-width: 300px;
-      }
     }
   }
 }
 
 .discount-badge {
   position: absolute;
-  top: 10%;
-  right: -20px;
-  z-index: 10;
-  width: 130px;
-  height: 130px;
-  background-image: url('../../../../public/discount-bage.svg');
+  top: 8%;
+  right: 0;
+  z-index: 3;
+  width: 120px;
+  height: 120px;
+  background-image: url('/discount-bage.svg');
   background-repeat: no-repeat;
   background-size: contain;
   background-position: center;
@@ -155,21 +93,61 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  @media (max-width: 576px) {
-    width: 90px;
-    height: 90px;
-    right: -10px;
-    span {
-      font-size: 18px !important;
-    }
-  }
   span {
     color: white;
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.05;
+  }
+}
+
+@media (max-width: $bp-xl) {
+  .decorative-lamp img {
+    max-width: 160px;
+  }
+}
+
+@media (max-width: $bp-lg) {
+  .decorative-lamp {
+    display: none;
+  }
+  .hero-section {
+    min-height: 0;
+    padding: 40px 0 70px;
+  }
+  .hero-wrapper {
+    grid-template-columns: 1fr;
+    padding: 0 16px;
+    gap: 2rem;
+    text-align: center;
+  }
+  .hero-content {
+    order: 2;
+    align-items: center;
+    .main-title,
+    .paragraph {
+      max-width: 600px;
+    }
+  }
+  .hero-image-container {
+    order: 1;
+    .image-wrapper {
+      max-width: 380px;
+    }
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .hero-image-container .image-wrapper {
+    max-width: 280px;
+  }
+  .discount-badge {
+    width: 84px;
+    height: 84px;
+    right: -6px;
+    span {
+      font-size: 18px;
+    }
   }
 }
 
@@ -203,38 +181,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-.hero-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  z-index: 2;
-  .main-title {
-    max-width: 500px;
-    width: 200%;
-  }
-  margin-right: 2rem;
-}
-
-.hero-image-container {
-  flex: 1.5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  .image-wrapper {
-    @media (max-width: 1600px) {
-      margin-right: -7rem;
-    }
-    position: relative;
-    width: 100%;
-    img {
-      width: 100%;
-      height: auto;
-      min-width: 600px;
-      display: block;
-    }
   }
 }

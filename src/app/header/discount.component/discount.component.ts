@@ -1,10 +1,9 @@
 // src/app/header/discount.component/discount.component.ts
 import { Component, inject, input } from '@angular/core';
-import { IDiscountProduct, IProduct } from '../../models/interface';
-import { NavigatorService } from '../../services/navigatorService/navigatorService';
-import { AppRoutes } from '../../models/enum';
+import { IDiscountProduct } from '../../models/interface';
 import { LocalStorageService } from '../../services/localstorageService/localStorageService';
 import { DataBase } from '../../services/dataBaseService/dataBase';
+
 @Component({
   selector: 'app-discount',
   templateUrl: './discount.component.html',

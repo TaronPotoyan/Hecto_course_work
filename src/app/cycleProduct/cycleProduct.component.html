@@ -2,11 +2,9 @@
 <div class="product" (mouseenter)="onHover(true)" (mouseleave)="onHover(false)">
   <div class="img" [class.isHovered]="hovered()">
     <img [src]="product().url" [alt]="product().name" />
+    <button class="view-details-btn" [class.visible]="hovered()" (click)="viewDetails()">
+      View Category
+    </button>
   </div>
-  <button class="view-details-btn" [class.visible]="hovered()" (click)="viewDetails()">
-    View Categories
-  </button>
-  <div class="flex-row">
-    <h3 class="heading-3">{{ product().name }}</h3>
-  </div>
+  <h3 class="heading-4 title">{{ product().name }}</h3>
 </div>

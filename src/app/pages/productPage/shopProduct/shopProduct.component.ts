@@ -1,12 +1,13 @@
 // src/app/pages/productPage/shopProduct/shopProduct.component.ts
 // src/app/shopProduct/shopProduct.component.ts
-import { Component, HostListener, inject, input } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { IProduct } from '../../../models/interface';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { LocalStorageService } from '../../../services/localstorageService/localStorageService';
 import { LayoutType } from '../../../models/type';
 import { AppRoutes, ProductAction } from '../../../models/enum';
 import { NavigatorService } from '../../../services/navigatorService/navigatorService';
+import { ToastService } from '../../../services/toastService/toastService';
 
 @Component({
   selector: 'app-shop-product',
@@ -17,17 +18,17 @@ import { NavigatorService } from '../../../services/navigatorService/navigatorSe
 export class ShopProduct {
   private localStorageService = inject(LocalStorageService);
   private navService = inject(NavigatorService);
+  private toast = inject(ToastService);
 
   readonly ratingsArr = new Array(5).fill(0).map((_, i) => i + 1);
   readonly productActions = ProductAction;
 
   layout = input.required<LayoutType>();
   product = input.required<IProduct>();
-  isZoomed = false;
+  isZoomed = signal(false);
 
- 
-  viewDetails(){
-      this.navService.handleNavigate(AppRoutes.Products , this.product().id.toString());
+  viewDetails() {
+    this.navService.handleNavigate(AppRoutes.Products, this.product().id.toString());
   }
 
   handleAction(actionType: string) {
@@ -35,13 +36,16 @@ export class ShopProduct {
       this.localStorageService.addToBasket(this.product());
     }
 
+    if (actionType === ProductAction.Like) {
+      this.toast.show(`${this.product().name} added to your wishlist`);
+    }
+
     if (actionType === ProductAction.Zoom) {
       this.toggleZoom(true);
     }
   }
 
-  toggleZoom(event: boolean) {
-    this.isZoomed = event;
+  toggleZoom(show: boolean) {
+    this.isZoomed.set(show);
   }
-
 }

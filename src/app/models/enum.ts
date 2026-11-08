@@ -24,9 +24,9 @@ export enum SocialMedia {
 }
 
 export enum Languages {
-  English = 'English',
-  Armenian = 'Armenian',
-  French = 'French',
+  English = 'en',
+  Armenian = 'hy',
+  Russian = 'ru',
 }
 
 export enum Currencies {
@@ -103,7 +103,6 @@ export enum RouteMenuEnum {
   Products = 'Products',
   Blog = 'Blog',
   Contact = 'Contact',
-
 }
 
 export enum AppRoutes {
@@ -178,7 +177,15 @@ export enum SortBy {
   LowToHigh = 'low-high',
 }
 
+// Keys match SocialMedia so each icon maps to its own link.
 export enum SocialMediaLinks {
-  INST__LINK = 'https://www.instagram.com/?hl=en',
-  FB__LINK = 'https://www.facebook.com/'
+  INST = 'https://www.instagram.com/',
+  TW = 'https://x.com/',
+  PIN = 'https://www.pinterest.com/',
+}
+
+export enum ThemeMode {
+  Light = 'light',
+  Dark = 'dark',
+  System = 'system',
 }

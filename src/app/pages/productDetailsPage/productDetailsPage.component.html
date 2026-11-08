@@ -1,104 +1,176 @@
-
-<div class="details-container container">
-  <div class="gallery-section">
-    <div class="thumbnails">
-      @for (item of similarItems(); track $index) {
-        <img [src]="item.url" [alt]="item.name" />
+<!-- src/app/pages/productDetailsPage/productDetailsPage.component.html -->
+@if (product(); as product) {
+  <div class="details-container container">
+    <div class="gallery-section">
+      @if (similarItems().length) {
+        <div class="thumbnails">
+          @for (item of similarItems(); track item.id) {
+            <a [routerLink]="['/products', item.id]" [attr.aria-label]="item.name">
+              <img [src]="item.url" [alt]="item.name" />
+            </a>
+          }
+        </div>
       }
-    </div>
-    <div class="main-preview">
-      <img [src]="product()?.url" [alt]="product()?.name" />
-    </div>
-  </div>
-
-  <div class="info-section">
-    <h3 class="heading-3">{{ product()?.name || 'Headphones' }}</h3>
-
-    <div class="rating">
-      @for (star of stars(); track $index) {
-        <span class="fa fa-star star" [class.checked]="star === true"></span>
-      }
+      <div class="main-preview">
+        <img [src]="product.url" [alt]="product.name" />
+      </div>
     </div>
 
-    <div class="pricing">
-      <span class="current">${{product()?.currentPrice | number : numFormat.Currency }}</span>
-      <span class="discounted">${{product()?.originalPrice | number : numFormat.Currency }}</span>
-    </div>
+    <div class="info-section">
+      <h1 class="heading-3">{{ product.name }}</h1>
 
-    <p class="description">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris tellus porttitor purus, et
-      volutpat sit.
-    </p>
+      <div class="rating" [attr.aria-label]="product.rating + ' out of 5 stars'">
+        @for (star of stars(); track $index) {
+          <span class="fa fa-star star" [class.checked]="star"></span>
+        }
+      </div>
 
-    <div class="actions">
-      <button class="btn-primary" (click)="addToCard(true)">Add To Cart</button>
-      <button class="wishlist-btn"><img src="Black-heart.svg" alt="heart" /></button>
-    </div>
-  </div>
-</div>
+      <div class="pricing">
+        <span class="current">${{ product.currentPrice | number: numFormat.Currency }}</span>
+        <span class="discounted">${{ product.originalPrice | number: numFormat.Currency }}</span>
+      </div>
 
-<section class="tabs-wrapper">
-  <div class="container flex-box">
-    <nav class="tabs-nav">
-      @for (navItem of productDetailsNav; track $index) {
-        <a [className]="navItem.className" (click)="handleNavigation()">{{ navItem.value }}</a>
-      }
-    </nav>
-    <div class="tab-content flex-box">
-      <h4 class="heading-4">Varius tempor.</h4>
-      <p class="paragraph">{{ product()?.description }}</p>
-    </div>
-    <div class="tab-content flex-column">
-      <h4 class="heading-4">More Detailes</h4>
-      <div class="flex-column">
-        @for (detail of productMoreDetailsInfo; track $index) {
-          <div class="flex-container">
-            <img src="Bottom_arrow.svg" />
-            <span class="paragraph">{{ detail }}</span>
+      <p class="description">{{ product.description }}</p>
+
+      <dl class="meta">
+        @if (product.brand) {
+          <div>
+            <dt>Brand</dt>
+            <dd>{{ product.brand }}</dd>
           </div>
         }
+        @if (product.category) {
+          <div>
+            <dt>Category</dt>
+            <dd>{{ product.category }}</dd>
+          </div>
+        }
+      </dl>
+
+      <div class="actions">
+        <button class="btn-primary" (click)="addToCart()">Add To Cart</button>
+        <button class="btn-outline" (click)="openCardForm()">Buy Now</button>
+        <button class="wishlist-btn" aria-label="Add to wishlist" (click)="addToWishlist()">
+          <img class="icon-adaptive" src="Black-heart.svg" alt="" />
+        </button>
       </div>
     </div>
   </div>
-</section>
 
-<section class="relatedProducts">
-  <div class="flex container" style="margin-top: 3rem">
-    <h2 class="heading-2">Related Products</h2>
+  <section class="tabs-wrapper">
+    <div class="container tabs-inner">
+      <nav class="tabs-nav" role="tablist">
+        @for (t of tabs; track t) {
+          <button
+            type="button"
+            role="tab"
+            [class.active]="activeTab() === t"
+            [attr.aria-selected]="activeTab() === t"
+            (click)="activeTab.set(t)"
+          >
+            {{ t }}
+          </button>
+        }
+      </nav>
+
+      <div class="tab-content" role="tabpanel">
+        @switch (activeTab()) {
+          @case (tab.Description) {
+            <h2 class="heading-4">Varius tempor.</h2>
+            <p class="paragraph">{{ product.description }}</p>
+            <h3 class="heading-4">More Details</h3>
+            <ul class="more-details">
+              @for (detail of productMoreDetailsInfo; track $index) {
+                <li>
+                  <img class="icon-adaptive" src="Bottom_arrow.svg" alt="" />
+                  <span class="paragraph">{{ detail }}</span>
+                </li>
+              }
+            </ul>
+          }
+          @case (tab.AdditionalInfo) {
+            <dl class="meta meta--table">
+              <div>
+                <dt>Brand</dt>
+                <dd>{{ product.brand ?? '—' }}</dd>
+              </div>
+              <div>
+                <dt>Category</dt>
+                <dd>{{ product.category ?? '—' }}</dd>
+              </div>
+              <div>
+                <dt>Type</dt>
+                <dd>{{ product.type }}</dd>
+              </div>
+              <div>
+                <dt>Discount</dt>
+                <dd>{{ product.discountOffer ? product.discountOffer + '%' : '—' }}</dd>
+              </div>
+            </dl>
+          }
+          @case (tab.Reviews) {
+            <p class="paragraph">
+              Rated {{ product.rating }} out of 5 by our customers. Written reviews are coming soon.
+            </p>
+          }
+          @case (tab.Video) {
+            <p class="paragraph">No video is available for this product yet.</p>
+          }
+        }
+      </div>
+    </div>
+  </section>
+
+  @if (similarItems().length) {
+    <section class="related-products container">
+      <h2 class="heading-2">Related Products</h2>
+      <div class="products">
+        @for (item of similarItems(); track item.id) {
+          <app-product [product]="item" [typeProduct]="''"></app-product>
+        }
+      </div>
+    </section>
+  }
+} @else if (notFound()) {
+  <div class="state container">
+    <h1 class="heading-2">Product not found</h1>
+    <p class="paragraph">This product doesn't exist or is no longer available.</p>
+    <a class="btn-primary" routerLink="/products">Browse products</a>
   </div>
-  <div class="container products">
-    @for (item of similarItems(); track $index) {
-      <app-product [product]="item" [typeProduct]="''"></app-product>
-    }
+} @else if (dbService.state() === 'error') {
+  <div class="state container">
+    <p class="paragraph">Couldn't load this product. Is the API server running?</p>
+    <button class="btn-primary" (click)="dbService.load()">Retry</button>
   </div>
-</section>
+} @else {
+  <div class="state container"><p class="paragraph">Loading…</p></div>
+}
 
 @if (showCard()) {
   <div class="card-wrapper" (click)="closeCardForm()">
-    <div class="card-modal">
+    <div
+      class="card-modal"
+      role="dialog"
+      aria-label="Card details"
+      (click)="$event.stopPropagation()"
+    >
       <h3 class="heading-3">Enter Card Details</h3>
-
-      <form
-        class="card-form"
-        [formGroup]="paymentForm"
-        (ngSubmit)="onPay()"
-        (click)="$event.stopPropagation()"
-      >
-        @for (cartInfo of cartFormInfo; track $index) {
+      <form class="card-form" [formGroup]="paymentForm" (ngSubmit)="onPay()">
+        @for (cartInfo of cartFormInfo; track cartInfo.name) {
           <div class="form-group">
-            <label>{{ cartInfo.labelValue }}</label>
+            <label [for]="'card-' + cartInfo.name">{{ cartInfo.labelValue }}</label>
             <input
+              [id]="'card-' + cartInfo.name"
               [formControlName]="cartInfo.name"
               [type]="cartInfo.type"
               [placeholder]="cartInfo.placeholder"
-              [maxLength]="cartInfo.maxlength"
+              [attr.maxlength]="cartInfo.maxlength || null"
+              [class.invalid]="isInvalid(cartInfo.name)"
             />
           </div>
         }
         <div class="form-actions">
-          <button type="submit" class="btn-primary" [disabled]="paymentForm.invalid">
-            Pay Now
-          </button>
+          <button type="submit" class="btn-primary">Pay Now</button>
           <button type="button" class="btn-secondary" (click)="closeCardForm()">Cancel</button>
         </div>
       </form>

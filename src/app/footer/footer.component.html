@@ -1,34 +1,53 @@
 <!-- src/app/footer/footer.component.html -->
 <footer>
-  <div class="bckColor-grey-1">
+  <div class="footer-main">
     <div class="container">
       <div class="linkes">
-        <div class="additonal">
+        <div class="additonal additonal--brand">
           <h2 class="heading-2">Heckto</h2>
-          <div class="search">
-            <input type="text" placeholder="Enter Email Address" class="search__input" />
-            <button class="search__button">Sign Up</button>
-          </div>
+          <form class="search" (ngSubmit)="subscribe()">
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter Email Address"
+              aria-label="Email address"
+              class="search__input"
+              [ngModel]="email()"
+              (ngModelChange)="email.set($event)"
+            />
+            <button class="search__button" type="submit" [disabled]="submitting()">Sign Up</button>
+          </form>
           <span class="paragraph">17 Princess Road, London, Greater London NW1 8JR, UK</span>
         </div>
         @for (section of footerSections; track section.title) {
           <div class="additonal">
             <h4 class="heading-4">{{ section.title }}</h4>
-            @for (link of section.links; track link) {
-              <a (click)="handleNavigate(link)">{{ link }}</a>
-            }
+            <ul>
+              @for (link of section.links; track link) {
+                <li>
+                  <a (click)="handleNavigate(link)">{{ link }}</a>
+                </li>
+              }
+            </ul>
           </div>
         }
       </div>
     </div>
   </div>
-  <div class="bckColor-grey-2">
+  <div class="footer-bottom">
     <div class="container">
       <div class="static-info">
-        <span class="paragraph">©Webecy - All Rights Reserved</span>
+        <span class="paragraph">©{{ year }} Webecy - All Rights Reserved</span>
         <div class="icons-container">
-          @for (social of socialMedia; track social) {
-            <img [src]="social.mediaName + '.svg'" [alt]="social.mediaName + ' icon'"  (click)="handleNavigate(social.link, true)"/>
+          @for (social of socialMedia; track social.mediaName) {
+            <a
+              [href]="social.link"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="social.mediaName"
+            >
+              <img class="icon-adaptive" [src]="social.mediaName + '.svg'" alt="" />
+            </a>
           }
         </div>
       </div>

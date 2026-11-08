@@ -1,0 +1,124 @@
+<!-- src/app/shared/chatWidget/chatWidget.component.html -->
+@if (isOpen()) {
+  <section class="chat-panel" role="dialog" [attr.aria-label]="t().title">
+    <header class="chat-panel__header">
+      <div class="chat-panel__heading">
+        <h2>{{ t().title }}</h2>
+        <span class="status">{{ t().status }}</span>
+      </div>
+      <div class="chat-panel__header-actions">
+        <button
+          type="button"
+          class="icon-btn"
+          [title]="t().newChat"
+          [attr.aria-label]="t().newChat"
+          (click)="chat.reset()"
+        >
+          ↺
+        </button>
+        <button type="button" class="icon-btn" [attr.aria-label]="t().close" (click)="toggle()">
+          ×
+        </button>
+      </div>
+    </header>
+
+    <div class="lang-switch" role="group" [attr.aria-label]="t().language">
+      @for (lang of languages; track lang.code) {
+        <button
+          type="button"
+          [class.active]="languageService.language() === lang.code"
+          [attr.aria-pressed]="languageService.language() === lang.code"
+          [attr.lang]="lang.code"
+          [title]="lang.label"
+          (click)="setLanguage(lang.code)"
+        >
+          {{ lang.short }}
+        </button>
+      }
+    </div>
+
+    <div class="chat-panel__messages" #messageList>
+      <div class="bubble">{{ t().greeting }}</div>
+
+      @if (!hasConversation()) {
+        <div class="suggestions">
+          <span class="suggestions__title">{{ t().suggestionsTitle }}</span>
+          @for (question of t().suggestions; track question) {
+            <button type="button" class="suggestion" (click)="ask(question)">{{ question }}</button>
+          }
+        </div>
+      }
+
+      @for (message of chat.messages(); track $index) {
+        <div
+          class="bubble"
+          [class.bubble--user]="message.role === 'user'"
+          [class.bubble--error]="!!message.errorCode"
+        >
+          @if (message.errorCode) {
+            {{ t().errors[message.errorCode] }}
+          } @else if (isTyping(message)) {
+            <span class="typing" [attr.aria-label]="t().typing"><i></i><i></i><i></i></span>
+          } @else {
+            @for (segment of segments(message.content); track $index) {
+              @if (segment.link) {
+                <a [routerLink]="segment.link">{{ segment.text }}</a>
+              } @else {
+                <span>{{ segment.text }}</span>
+              }
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <form class="chat-panel__composer" (ngSubmit)="send()">
+      <textarea
+        #input
+        name="draft"
+        rows="1"
+        maxlength="2000"
+        [placeholder]="t().placeholder"
+        [ngModel]="draft()"
+        (ngModelChange)="draft.set($event)"
+        (keydown)="onKeydown($event)"
+      ></textarea>
+      @if (chat.isStreaming()) {
+        <button type="button" class="send-btn" [attr.aria-label]="t().stop" (click)="chat.stop()">
+          ■
+        </button>
+      } @else {
+        <button
+          type="submit"
+          class="send-btn"
+          [disabled]="!draft().trim()"
+          [attr.aria-label]="t().send"
+        >
+          ➤
+        </button>
+      }
+    </form>
+  </section>
+}
+
+<button
+  type="button"
+  class="chat-fab"
+  [class.chat-fab--open]="isOpen()"
+  [attr.aria-label]="isOpen() ? t().close : t().open"
+  (click)="toggle()"
+>
+  @if (isOpen()) {
+    <span aria-hidden="true">×</span>
+  } @else {
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5v-8Z"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linejoin="round"
+      />
+      <path d="M8 8.5h8M8 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
+  }
+</button>

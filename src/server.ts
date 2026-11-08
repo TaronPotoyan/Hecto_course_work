@@ -6,6 +6,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { request as httpRequest } from 'node:http';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -13,17 +14,37 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+const apiUrl = new URL(process.env['API_URL'] ?? 'http://localhost:3000');
+
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * Proxy /api/* to the Node backend (server/), streaming bodies both ways
+ * so Server-Sent Events from the support chat pass straight through.
  */
+app.use('/api', (req, res) => {
+  const proxyReq = httpRequest(
+    {
+      hostname: apiUrl.hostname,
+      port: apiUrl.port,
+      path: req.originalUrl,
+      method: req.method,
+      headers: {
+        ...req.headers,
+        host: apiUrl.host,
+        'x-forwarded-for': req.socket.remoteAddress ?? '',
+      },
+    },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers);
+      proxyRes.pipe(res);
+    },
+  );
+  proxyReq.on('error', () => {
+    if (!res.headersSent) res.status(502).json({ error: 'API unavailable' });
+    else res.end();
+  });
+  res.on('close', () => proxyReq.destroy());
+  req.pipe(proxyReq);
+});
 
 /**
  * Serve static files from /browser

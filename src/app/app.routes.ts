@@ -5,8 +5,6 @@ import { ProductPageComponent } from './pages/productPage/productPage.component'
 import { ProductDetailsPageComponent } from './pages/productDetailsPage/productDetailsPage.component';
 import { BasketPageComponent } from './pages/basketPage/basketPage.component';
 import { LoginPageComponent } from './pages/loginComponent/login-component';
-import { DataBase } from './services/dataBaseService/dataBase';
-import { FilterProducts } from './services/filterProductsService/filterProducts';
 import { ErrorPageComponent } from './pages/errorPage/errorPage.component';
 import { AppRoutes } from './models/enum';
 
@@ -22,7 +20,6 @@ export const routes: Routes = [
   },
   {
     path: AppRoutes.Products,
-    providers: [DataBase, FilterProducts],
     children: [
       {
         path: AppRoutes.Home,

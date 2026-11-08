@@ -22,7 +22,7 @@
     }
 
     h1 {
-      font-size: 80px;
+      font-size: clamp(56px, 15vw, 80px);
       color: $grey-4; // Dark Navy
       margin-bottom: 10px;
       font-weight: 900;

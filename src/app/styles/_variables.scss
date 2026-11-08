@@ -1,10 +1,11 @@
 // src/app/styles/_variables.scss
-// src/styles/_variables.scss
+// Brand colors stay as static Sass values (they work in both themes and can be
+// used with Sass color functions). Neutral colors map to CSS custom properties
+// defined in `_theme.scss`, so they switch automatically between light/dark.
 $primary: #fb2e86;
 $primary-dark: #f0056a;
 $primary-light: #fc5fa2;
-$primary-lighter : #FEBAD7;
-$danger-light: #feb9c4;
+$primary-lighter: #febad7;
 $secondary: #f9ba00;
 $secondary-light: #fff3ce;
 $tertiary: #7e33e0;
@@ -16,13 +17,29 @@ $success: #0cc562;
 $success-dark: #00994c;
 $success-light: #92f2bf;
 $white: white;
-$grey-1: #f8f8fd;
-$grey-2: #e5e0fc;
-$grey-3: #8a8fb9;
-$grey-4: #101750;
-$hero-section: #f2f0ff;
-$cycle-img-bkc: #10175026;
-$width-big: 416px;
-$height-big: 475px;
 $star-active-color: #f9ba00;
 $star-secondary-color: #fff3ce;
+
+// Theme-aware tokens
+$grey-1: var(--color-surface-alt);
+$grey-2: var(--color-soft);
+$grey-3: var(--color-text-muted);
+$grey-4: var(--color-text);
+$text-strong: var(--color-text-strong);
+$surface: var(--color-surface);
+$surface-muted: var(--color-surface-muted);
+$border: var(--color-border);
+$hero-section: var(--color-hero);
+$shadow-sm: var(--shadow-sm);
+$shadow-md: var(--shadow-md);
+$shadow-lg: var(--shadow-lg);
+$cycle-img-bkc: var(--color-cycle);
+
+$width-big: 416px;
+$height-big: 475px;
+
+// Breakpoints (max-width, desktop-first to match the existing layout)
+$bp-xl: 1200px;
+$bp-lg: 992px;
+$bp-md: 768px;
+$bp-sm: 576px;

@@ -1,42 +1,38 @@
 <!-- src/app/pages/basketPage/basketPage.component.html -->
-<!-- src/pages/basketPage/basketPage.component.html -->
 @if (items().length > 0) {
-  <div class="basket-container">
+  <div class="basket-container container">
+    <h1 class="heading-2 page-title">Shopping Cart</h1>
     <div class="basket-layout">
       <div class="products-column">
-        <div class="products-list">
-          @for (item of items(); track item.id) {
-            <app-basket-item [itemInp]="item"> </app-basket-item>
-          }
-        </div>
-      </div>
-
-      <div class="summary-column">
-        <h3 class="summary-title">Cart Totals</h3>
-        <div class="summary-card">
-          @for (tableItem of summaryTable(); track $index) {
-            <div class="summary-row" [ngClass]="tableItem.className">
-              <span>{{ tableItem.title }}</span>
-
-              <span>$ {{ tableItem.value | number: numberFormat.Currency }}</span>
-            </div>
-          }
-          <p class="shipping-info">Shipping:  ${{ SHIPPING_COST | number: numberFormat.Currency}}</p>
-          <div class="flex-container">
-            <button class="btn-primary">Proceed to checkout</button>
-          </div>
-        </div>
+        @for (item of items(); track item.id) {
+          <app-basket-item [itemInp]="item" />
+        }
         <div class="basket-actions">
           <button class="btn-clear" (click)="clearCart()">Clear cart</button>
         </div>
       </div>
+
+      <aside class="summary-column">
+        <h2 class="summary-title">Cart Totals</h2>
+        <div class="summary-card">
+          @for (tableItem of summaryTable(); track tableItem.title) {
+            <div class="summary-row" [ngClass]="tableItem.className">
+              <span>{{ tableItem.title }}</span>
+              <span>${{ tableItem.value | number: numberFormat.Currency }}</span>
+            </div>
+          }
+          <p class="shipping-info">
+            <span class="dot"></span>
+            Shipping: ${{ SHIPPING_COST | number: numberFormat.Currency }}
+          </p>
+          <button class="btn-primary checkout" (click)="checkout()">Proceed to checkout</button>
+        </div>
+      </aside>
     </div>
   </div>
 } @else {
-  <div class="empty">
-    <div class="empty__img">
-      <img src="empty-basket.svg" alt="empty basket img" />
-    </div>
+  <div class="empty container">
+    <img src="empty-basket.svg" alt="" class="empty__img" />
     <h2 class="heading-2">Your cart is empty</h2>
     <button class="btn-primary" (click)="startShopping()">Start Shopping</button>
   </div>

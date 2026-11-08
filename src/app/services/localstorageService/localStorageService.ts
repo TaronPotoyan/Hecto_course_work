@@ -1,15 +1,21 @@
 // src/app/services/localstorageService/localStorageService.ts
-import { Injectable, afterNextRender, signal, inject } from '@angular/core';
+import { Injectable, afterNextRender, computed, inject, signal } from '@angular/core';
 import { IProduct } from '../../models/interface';
-import { NavigatorService } from '../navigatorService/navigatorService';
-import { AppRoutes } from '../../models/enum';
+import { ToastService } from '../toastService/toastService';
+
+const STORAGE_KEY = 'Heckto';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LocalStorageService {
   private basket = signal<IProduct[]>([]);
-  private navService = inject(NavigatorService);
+  private toast = inject(ToastService);
+
+  /** Total number of units in the basket (for the header badge). */
+  readonly basketCount = computed(() =>
+    this.basket().reduce((acc, item) => acc + (item.quantity ?? 1), 0),
+  );
 
   constructor() {
     afterNextRender(() => {
@@ -27,43 +33,24 @@ export class LocalStorageService {
   }
 
   removeFromBasket(productId: number) {
-    this.basket.update((items) => {
-      const newItems = items.filter((i) => i.id !== productId);
-      this.syncToStorage(newItems);
-      return newItems;
-    });
+    this.basket.update((items) => items.filter((i) => i.id !== productId));
+    this.syncToStorage(this.basket());
   }
 
   updateQuantity(productId: number, count: number): boolean {
-    //todo
-    
-    let success = false;
+    const items = this.basket();
+    const product = items.find((p) => p.id === productId);
+    if (!product) return false;
 
-    this.basket.update((items) => {
-      const product = items.find((p) => p.id === productId);
+    const newQuantity = (product.quantity ?? 1) + count;
+    const newItems =
+      newQuantity <= 0
+        ? items.filter((p) => p.id !== productId)
+        : items.map((p) => (p.id === productId ? { ...p, quantity: newQuantity } : p));
 
-      if (!product) {
-        success = false;
-        return items;
-      }
-
-      const newQuantity = (product.quantity ?? 1) + count;
-      console.log(newQuantity);
-      let newItems: IProduct[];
-
-      if (newQuantity <= 0) {
-        newItems = items.filter((p) => p.id !== productId);
-      } else {
-        newItems = items.map((p) => (p.id === productId ? { ...p, quantity: newQuantity } : p));
-      }
-
-      this.syncToStorage(newItems);
-      success = true;
-      console.log(newItems);
-      return newItems;
-    });
-
-    return success;
+    this.basket.set(newItems);
+    this.syncToStorage(newItems);
+    return true;
   }
 
   getBasketItems(): IProduct[] {
@@ -71,40 +58,43 @@ export class LocalStorageService {
   }
 
   addToBasket(product: IProduct) {
-    const currentBasket = this.basket();
-    const exists = currentBasket.find((item) => item.id === product.id);
+    const exists = this.basket().some((item) => item.id === product.id);
 
-    if (!exists) {
-      this.basket.update((items) => {
-        const newItems = [...items, product];
-        this.syncToStorage(newItems);
-        return newItems;
-      });
-
-      alert(`Item ${product.name} added to basket`);
-    } else {
-      alert('Product is already in the basket');
+    if (exists) {
+      this.updateQuantity(product.id, 1);
+      this.toast.success(`Another ${product.name} added to your cart`);
+      return;
     }
 
-    this.navService.handleNavigate(AppRoutes.Basket);
+    const newItems = [...this.basket(), { ...product, quantity: 1 }];
+    this.basket.set(newItems);
+    this.syncToStorage(newItems);
+    this.toast.success(`${product.name} added to your cart`);
   }
 
   private syncToStorage(items: IProduct[]) {
-    const productString = JSON.stringify(items);
-    localStorage.setItem('Heckto', productString);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      console.error('Could not save basket', e);
+    }
   }
-  private loadBasketFromStorage() {
-    const rawData = localStorage.getItem('Heckto');
-    if (rawData) {
-      try {
-        const data = JSON.parse(rawData);
 
-        this.basket.set(Array.isArray(data) ? data : []);
-      } catch (e) {
-        console.error('Error parsing storage. Clearing corrupted data.', e);
-        localStorage.removeItem('Heckto');
-        this.basket.set([]);
-      }
+  private loadBasketFromStorage() {
+    let rawData: string | null = null;
+    try {
+      rawData = localStorage.getItem(STORAGE_KEY);
+    } catch {
+      return;
+    }
+    if (!rawData) return;
+    try {
+      const data = JSON.parse(rawData);
+      this.basket.set(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error('Error parsing storage. Clearing corrupted data.', e);
+      localStorage.removeItem(STORAGE_KEY);
+      this.basket.set([]);
     }
   }
 }

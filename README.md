@@ -1,59 +1,80 @@
 # Heckto
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.1.
+E-commerce storefront built with **Angular 21 (SSR)** and a **Node.js + TypeScript + PostgreSQL** API.
 
-## Development server
-
-To start a local development server, run:
-
-```bash
-ng serve
+```
+Heckto/
+├── src/        Angular app (SSR via src/server.ts)
+└── server/     REST API (Express 5, pg, JWT auth, Claude-powered support chat)
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Features
 
-## Code scaffolding
+- Responsive layout (desktop → phone): mobile nav menu, filter drawer, stacked layouts
+- Light / Dark / System themes (top bar → theme picker), saved per browser and applied before first paint
+- Catalog, promotions and categories loaded from PostgreSQL
+- Accounts: register / sign in (scrypt-hashed passwords, JWT)
+- Newsletter sign-up
+- Floating **support chatbot** (streams replies from Claude, knows the live catalog)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Getting started
 
-```bash
-ng generate component component-name
-```
+### 1. Database
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Use any PostgreSQL 14+ instance. To start one with Docker:
 
 ```bash
-ng build
+cd server
+docker compose up -d        # postgres on localhost:5432, user/pass postgres/postgres
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### 2. API (`server/`)
 
 ```bash
-ng test
+cd server
+cp .env.example .env        # set DATABASE_URL, JWT_SECRET (and ANTHROPIC_API_KEY for the chatbot)
+npm install
+npm run db:setup            # creates the database if needed, runs migrations, seeds the catalog
+npm run dev                 # http://localhost:3000
 ```
 
-## Running end-to-end tests
+The seed reads the catalog from `src/DB/indexDb.ts`, so edit products there and re-run `npm run db:seed`.
 
-For end-to-end (e2e) testing, run:
+### 3. Frontend
 
 ```bash
-ng e2e
+npm install
+npm start                   # http://localhost:4200, proxies /api → localhost:3000
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Production: `npm run build && API_URL=http://localhost:3000 npm run serve:ssr:Heckto`
+(the SSR server proxies `/api` to `API_URL`).
 
-## Additional Resources
+## API
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+| Method | Path | Description |
+| --- | --- | --- |
+| GET | `/api/health` | Health + DB check |
+| GET | `/api/products?q=&type=&category=&brand=` | Products (optional filters) |
+| GET | `/api/products/:id` | One product |
+| GET | `/api/promotions` | Hero / discount promotions |
+| GET | `/api/top-categories` | Top categories |
+| POST | `/api/auth/register` | `{ name, email, password }` → `{ token, user }` |
+| POST | `/api/auth/login` | `{ email, password }` → `{ token, user }` |
+| GET | `/api/auth/me` | Current user (Bearer token) |
+| POST | `/api/subscribers` | `{ email }` newsletter sign-up |
+| POST | `/api/chat` | `{ messages: [{ role, content }] }` → Server-Sent Events stream |
+
+### Support chatbot
+
+`POST /api/chat` uses the Anthropic SDK (`claude-opus-5-5` by default, `CHAT_MODEL` to change) with the live
+catalog in the system prompt. It is rate-limited to 20 messages/min per IP and history is capped at 20 turns.
+Without `ANTHROPIC_API_KEY` the widget still works but replies that support isn't configured.
+
+## Tests & lint
+
+```bash
+npm test          # Angular unit tests (Vitest)
+npm run lint
+cd server && npm run typecheck
+```

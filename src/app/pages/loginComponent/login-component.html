@@ -1,42 +1,86 @@
 <!-- src/app/pages/loginComponent/login-component.html -->
 <div class="login-wrapper">
   <div class="login-card">
-    <h2>Login</h2>
-    <p>Please login using account details below.</p>
+    @if (auth.user(); as user) {
+      <h1>Hi, {{ user.name }}</h1>
+      <p>You're signed in as {{ user.email }}.</p>
+      <button type="button" class="btn-primary" (click)="logout()">Sign Out</button>
+    } @else {
+      <h1>{{ mode() === 'login' ? 'Login' : 'Create Account' }}</h1>
+      <p>
+        {{
+          mode() === 'login'
+            ? 'Please login using account details below.'
+            : 'Fill in your details to create an account.'
+        }}
+      </p>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <input type="email" placeholder="Email Address" formControlName="email" />
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        @if (mode() === 'register') {
+          <div class="form-group">
+            <input type="text" placeholder="Full Name" formControlName="name" autocomplete="name" />
+            @if (showError('name')) {
+              <small class="error-text">Please enter your name.</small>
+            }
+          </div>
+        }
 
-        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
-          <small class="error-text">Please enter a valid email address.</small>
+        <div class="form-group">
+          <input
+            type="email"
+            placeholder="Email Address"
+            formControlName="email"
+            autocomplete="email"
+          />
+          @if (showError('email')) {
+            <small class="error-text">Please enter a valid email address.</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            placeholder="Password"
+            formControlName="password"
+            [attr.autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
+          />
+          @if (showError('password')) {
+            <small class="error-text">Password must be at least 6 characters.</small>
+          }
+        </div>
+
+        @if (serverError()) {
+          <div class="server-error" role="alert">{{ serverError() }}</div>
+        }
+
+        @if (mode() === 'login') {
+          <a class="forgot-password">Forgot your password?</a>
+        }
+
+        <button type="submit" class="btn-primary" [disabled]="submitting()">
+          {{ submitting() ? 'Please wait…' : mode() === 'login' ? 'Sign In' : 'Create Account' }}
+        </button>
+      </form>
+
+      <div class="social-logins">
+        @for (provider of socialProviders; track provider) {
+          <button
+            type="button"
+            class="social-btn {{ provider.toLowerCase() }}"
+            (click)="socialLogin(provider)"
+          >
+            Login with {{ provider }}
+          </button>
         }
       </div>
 
-      <div class="form-group">
-        <input type="password" placeholder="Password" formControlName="password" />
-
-        @if (
-          loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['minlength']
-        ) {
-          <small class="error-text">Password must be at least 6 characters.</small>
-        } @else if (
-          loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']
-        ) {
-          <small class="error-text">Password is required.</small>
+      <div class="footer-link">
+        @if (mode() === 'login') {
+          Don't have an Account? <a (click)="setMode('register')">Create account</a>
+        } @else {
+          Already have an account? <a (click)="setMode('login')">Sign in</a>
         }
       </div>
-
-      <a class="forgot-password">Forgot your password?</a>
-
-      <button type="submit" class="btn-primary" [disabled]="loginForm.invalid">Sign In</button>
-    </form>
-    <div class="social-logins">
-      @for (provider of ['Google', 'Facebook', 'GitHub']; track provider) {
-        <button class="social-btn {{ provider.toLowerCase() }}">Login with {{ provider }}</button>
-      }
-    </div>
-
-    <div class="footer-link">Don't have an Account? <a href="#">Create account</a></div>
+    }
   </div>
 </div>

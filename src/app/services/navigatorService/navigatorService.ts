@@ -1,33 +1,33 @@
 // src/app/services/navigatorService/navigatorService.ts
-// src/app/services/NavigatorService/navigatorService.ts
-import { inject, Injectable, signal, Signal } from '@angular/core';
+import { inject, Injectable, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NavigatorService {
   private navigator = inject(Router);
-  private urlSignal = signal<string>(this.navigator.url);
+
+  private readonly urlSignal: Signal<string> = toSignal(
+    this.navigator.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+    ),
+    { initialValue: this.navigator.url },
+  );
 
   trackRouteChanges(): Signal<string> {
-    this.navigator.events
-      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-      .subscribe((event) => {
-        this.urlSignal.set(event.urlAfterRedirects);
-      });
-
-    return this.urlSignal.asReadonly();
+    return this.urlSignal;
   }
 
   currentUrl(): Signal<string> {
-    return this.urlSignal.asReadonly();
+    return this.urlSignal;
   }
 
   handleNavigate(url: string, params?: string) {
     const path = url.toLowerCase().replace(/\s+/g, '-');
-    console.log(path);
     this.navigator.navigate(params ? [`/${path}`, params] : [`/${path}`]);
   }
 }

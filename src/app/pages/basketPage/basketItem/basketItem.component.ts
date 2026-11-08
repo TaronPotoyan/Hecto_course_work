@@ -20,7 +20,11 @@ export class BasketItemComponent {
   numberFormat = NumberFormat;
   quantityAction = QuantityAction;
 
-  updateCount(newQuantity: number): void {
-    this.localStorageService.updateQuantity(this.itemInp().id, newQuantity);
+  updateCount(delta: number): void {
+    this.localStorageService.updateQuantity(this.itemInp().id, delta);
+  }
+
+  remove(): void {
+    this.localStorageService.removeFromBasket(this.itemInp().id);
   }
 }

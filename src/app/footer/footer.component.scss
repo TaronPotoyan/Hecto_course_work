@@ -1,27 +1,47 @@
 // src/app/footer/footer.component.scss
-@use '../styles/variables' as * ;
-@use '../styles/mixins' as * ;
-.linkes {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding-top: 6rem;
-  min-height: 488px;
-}
+@use '../styles/variables' as *;
 
 footer {
-  flex: 1;
   margin-top: 4rem;
 }
 
+.footer-main {
+  background-color: $grey-1;
+}
+
+.footer-bottom {
+  background-color: $grey-2;
+}
+
+.linkes {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: 3rem 2rem;
+  padding: 5rem 0;
+}
+
 .additonal {
-  @include flex-box(column, flex-start, space-between, nowrap, 3rem);
-  width: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
   a {
     text-decoration: none;
     color: $grey-3;
     cursor: pointer;
-    display: inline-block;
+    transition: color 0.2s ease;
+    &:hover {
+      color: $primary;
+    }
+  }
+  .search {
+    max-width: 380px;
   }
 }
 
@@ -29,26 +49,51 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
-  height: 56px;
+  gap: 1rem 2rem;
+  min-height: 56px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  .paragraph {
+    width: auto;
+  }
 }
 
 .icons-container {
   display: flex;
-  width: 10%;
   align-items: center;
-  justify-content: space-around;
-  gap: 2rem;
-  img {
-    display: inline-block;
-    cursor: pointer;
+  gap: 1rem;
+  a {
+    display: inline-flex;
+    transition: transform 0.2s ease;
+    &:hover {
+      transform: translateY(-2px);
+    }
   }
 }
 
-.bckColor-grey-1 {
-  background-color: $grey-1;
+@media (max-width: $bp-lg) {
+  .linkes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .additonal--brand {
+    grid-column: 1 / -1;
+  }
 }
 
-.bckColor-grey-2 {
-  background-color: $grey-2;
+@media (max-width: $bp-md) {
+  .linkes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .linkes {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .static-info {
+    justify-content: center;
+    text-align: center;
+  }
 }

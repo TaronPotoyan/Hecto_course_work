@@ -1,107 +1,105 @@
 // src/app/pages/homePage/homePage.component.ts
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DataBase } from '../../services/dataBaseService/dataBase';
-import { IDiscountProduct, IProduct, IProductAction } from '../../models/interface';
+import { IProduct, IProductAction } from '../../models/interface';
 import { ProductComponent } from '../../product/product.component';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { AppRoutes, ProductAction, ProductActionIcons } from '../../models/enum';
+import { AppRoutes, ProductAction } from '../../models/enum';
 import { CycleProductComponent } from '../../cycleProduct/cycleProduct.component';
 import { Helper } from '../../helpers/helperClass';
 import { LocalStorageService } from '../../services/localstorageService/localStorageService';
+import { ToastService } from '../../services/toastService/toastService';
+import { SubscribeService } from '../../services/subscribeService/subscribeService';
+
+const UNIQUE_PRODUCT_ID = 7;
 
 @Component({
   selector: 'app-home.component',
-  imports: [ProductComponent, RouterLink, CurrencyPipe, CycleProductComponent, CommonModule],
+  imports: [ProductComponent, CurrencyPipe, CycleProductComponent, FormsModule],
   templateUrl: './homePage.component.html',
   styleUrl: './homePage.component.scss',
-  providers: [DataBase],
 })
-export class HomePageComponent implements OnInit {
+export class HomePageComponent {
   protected dbService = inject(DataBase);
-  protected navService = inject(Router);
-  protected localStorageService = inject(LocalStorageService);
+  private router = inject(Router);
+  private localStorageService = inject(LocalStorageService);
+  private toast = inject(ToastService);
+  private subscribeService = inject(SubscribeService);
 
   readonly productAction = ProductAction;
   readonly extentionsDiscountItems = Helper.getDiscountExtensionText();
   readonly navItems = Helper.getNavItems();
   readonly discountNavItems = Helper.getDiscountNavItems();
   readonly productActions: IProductAction[] = Helper.getProductActions();
-  arraySize4 = signal([{ active: true }, { active: false }, { active: false }, { active: false }]);
+  readonly uniqueInfoCons = Helper.getUniqueInfoCons();
 
-  dotes = [{ active: true }, { active: false }, { active: false }];
+  featuredDots = signal([true, false, false, false]);
+  categoryDots = signal([true, false, false]);
   isZoomed = signal(false);
   url = signal('');
-  featurdProducts = signal<IProduct[]>([]);
-  leastestProducts = signal<IProduct[]>([]);
-  discountProducts = signal<IDiscountProduct[]>([]);
-  topCategories = signal<IProduct[]>([]);
   activeNavIndex = signal(0);
   activeDiscountNavIndex = signal(0);
-  homes = signal<IProduct[]>([]);
-  chaire: IProduct = this.dbService.getProductById(7)!;
-  trandProducts: IProduct[] = this.dbService.getTrendProducts();
-  uniqueInfoCons = Helper.getUniqueInfoCons();
+  newsletterEmail = signal('');
 
-  ngOnInit(): void {
-    this.featurdProducts.set(this.dbService.getFeaturedProducts());
-    this.leastestProducts.set(this.dbService.getFirstN(6));
-    this.topCategories.set(this.dbService.getTopCategories());
-    const disP = this.dbService.getDiscountedProducts();
-    this.discountProducts.set(disP);
-    this.homes.set(this.dbService.getHomes());
-    console.log(this.arraySize4);
-  }
+  // linkedSignal: recomputed when API data arrives, but can still be reshuffled locally.
+  featurdProducts = linkedSignal(() => this.dbService.getFeaturedProducts());
+  leastestProducts = linkedSignal(() => this.dbService.getFirstN(6));
+  topCategories = linkedSignal(() => this.dbService.getTopCategories());
+
+  readonly chaire = computed(() => this.dbService.getProductById(UNIQUE_PRODUCT_ID));
+  readonly trandProducts = computed(() => this.dbService.getTrendProducts());
+  readonly homes = computed(() => this.dbService.getHomes());
+  readonly activeDiscount = computed(() => {
+    const type = this.discountNavItems[this.activeDiscountNavIndex()].type;
+    return this.dbService.getDiscountedProducts().find((p) => p.type === type) ?? null;
+  });
 
   setActiveNav(index: number) {
     this.activeNavIndex.set(index);
-    const shuffled = [...this.dbService.getFirstN(6)].sort(() => Math.random() - 0.5);
-    this.leastestProducts.set([]);
-    setTimeout(() => {
-      this.leastestProducts.set(shuffled);
-    }, 10);
+    this.leastestProducts.set(Helper.shuffleArray(this.dbService.getFirstN(6)));
   }
 
   seeItem(item: IProduct) {
-    this.navService.navigate([AppRoutes.Products, item.id]);
+    this.router.navigate(['/', AppRoutes.Products, item.id]);
   }
 
   setActiveDiscountNav(index: number) {
     this.activeDiscountNavIndex.set(index);
   }
 
-  doteClick(index: number, forDot: boolean = false) {
-    if (forDot) {
-      const newArr = Helper.shuffleArray(this.featurdProducts());
-      this.featurdProducts.set(newArr);
-      this.arraySize4.set(
-        this.arraySize4().map((d, i) => ({
-          ...d,
-          active: i === index,
-        })),
-      );
-
-      return;
-    }
-
-    const newArr = Helper.shuffleArray<IProduct>(this.topCategories());
-    this.topCategories.set(newArr);
-    this.dotes = this.dotes.map((d, i) => ({
-      ...d,
-      active: i === index,
-    }));
+  featuredDotClick(index: number) {
+    this.featurdProducts.set(Helper.shuffleArray(this.featurdProducts()));
+    this.featuredDots.set(this.featuredDots().map((_, i) => i === index));
   }
 
-  handleAction(type: string, product: IProduct): void {
+  categoryDotClick(index: number) {
+    this.topCategories.set(Helper.shuffleArray(this.topCategories()));
+    this.categoryDots.set(this.categoryDots().map((_, i) => i === index));
+  }
+
+  handleAction(type: string, product: IProduct | null): void {
+    if (!product) return;
     if (type === ProductAction.Basket) return this.localStorageService.addToBasket(product);
-    if (type === ProductAction.Like) return alert('Liked');
+    if (type === ProductAction.Like)
+      return this.toast.show(`${product.name} added to your wishlist`);
     if (type === ProductAction.Zoom) return this.handleZoom(true, product);
   }
 
   handleZoom(show: boolean, item: IProduct | null = null) {
     this.isZoomed.set(show);
-    if (item) {
-      this.url.set(item.url);
+    if (item) this.url.set(item.url);
+  }
+
+  shopNow() {
+    const promo = this.activeDiscount();
+    if (promo) this.router.navigate(['/', AppRoutes.Products, promo.id]);
+  }
+
+  async subscribe() {
+    if (await this.subscribeService.subscribe(this.newsletterEmail())) {
+      this.newsletterEmail.set('');
     }
   }
 }

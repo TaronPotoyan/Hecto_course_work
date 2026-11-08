@@ -1,7 +1,8 @@
 // src/app/styles/_global.scss
-// src/styles/_global.scss
+@use 'sass:color';
 @use './mixins' as *;
 @use './variables' as *;
+
 .flex-container {
   @include flex-box($gap: 1rem);
 }
@@ -27,16 +28,14 @@
 }
 
 .dote {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   display: inline-block;
   border: 2px solid $primary;
   background-color: transparent;
   transition: all 0.3s ease;
   cursor: pointer;
-  pointer-events: auto;
-  z-index: 101231231230;
 }
 
 .dote.active {
@@ -49,6 +48,9 @@
 
 .padding-middle {
   padding: 4rem;
+  @media (max-width: $bp-md) {
+    padding: 2rem 1rem;
+  }
 }
 
 .link {
@@ -64,56 +66,64 @@
   font-weight: 400;
   width: 100%;
   font-size: 1rem;
+  line-height: 1.6;
 }
 
 .search {
   display: flex;
   align-items: center;
-  border: 1px solid #e7e6ef;
-  border-radius: 5px;
+  border: 1px solid $border;
+  border-radius: 6px;
   height: 40px;
-  background-color: white;
+  background-color: $surface;
   font-family: inherit;
-  transition: all 0.3s ease;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   &:focus-within {
-    transform: scale(1.2);
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.15);
   }
   &__input {
     flex: 1;
+    min-width: 0;
+    height: 100%;
     border: none;
     outline: none;
     padding: 0 15px;
     font-size: 14px;
-    border-color: $grey-2;
-    color: $grey-3;
+    background: transparent;
+    color: $grey-4;
     &::placeholder {
-      color: #cbcbe0;
+      color: $grey-3;
+      opacity: 0.7;
     }
-
   }
   &__button {
-    width: 60px;
+    min-width: 60px;
+    padding: 0 14px;
+    height: 100%;
     color: white;
-    min-height: 36px;
     background-color: $primary;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    white-space: nowrap;
     transition:
       background 0.3s ease,
       transform 0.1s ease;
-    border-radius: 6px;
     &:hover {
-      background-color: darken($primary, 5%);
+      background-color: color.adjust($primary, $lightness: -5%);
     }
     img {
       width: 15px;
       height: 15px;
     }
     &:active {
-      transform: scale(0.9);
+      transform: scale(0.96);
     }
   }
 }
@@ -122,6 +132,7 @@
   max-width: 1140px;
   margin: 0 auto;
   width: 100%;
+  padding-inline: 16px;
 }
 
 .color-grey {
@@ -142,6 +153,19 @@
 
 .section-container {
   @include flex-box($direction: column, $align: center, $gap: 4rem);
+  @media (max-width: $bp-md) {
+    gap: 3rem;
+  }
 }
 
-
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -6,6 +6,7 @@ import { LocalStorageService } from '../../services/localstorageService/localSto
 import { AppRoutes, NumberFormat } from '../../models/enum';
 import { BasketItemComponent } from './basketItem/basketItem.component';
 import { NavigatorService } from '../../services/navigatorService/navigatorService';
+import { ToastService } from '../../services/toastService/toastService';
 
 @Component({
   selector: 'app-basket',
@@ -16,6 +17,7 @@ import { NavigatorService } from '../../services/navigatorService/navigatorServi
 export class BasketPageComponent {
   private localStorageService = inject(LocalStorageService);
   private navService = inject(NavigatorService);
+  private toast = inject(ToastService);
 
   readonly SHIPPING_COST = 100;
   readonly items = this.localStorageService.getBasketSignal();
@@ -36,6 +38,10 @@ export class BasketPageComponent {
     if (confirm('Are you sure you want to clear your cart?')) {
       this.localStorageService.clearBasket();
     }
+  }
+
+  checkout() {
+    this.toast.show('Checkout is coming soon. Use "Buy Now" on a product page to pay by card.');
   }
 
   startShopping() {

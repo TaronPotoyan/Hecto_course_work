@@ -1,5 +1,4 @@
 <!-- src/app/pages/basketPage/basketItem/basketItem.component.html -->
-<!-- src/app/basketItem/basketItem.component.html -->
 <div class="basket-item">
   <div class="product-info">
     <div class="product-image">
@@ -8,13 +7,26 @@
     <div class="product-details">
       <h3 class="product-name">{{ itemInp().name }}</h3>
       <p class="product-price">${{ itemInp().currentPrice | number: numberFormat.Currency }}</p>
+      <button type="button" class="remove-btn" (click)="remove()">Remove</button>
     </div>
   </div>
   <div class="actions">
     <div class="quantity-selector">
-      <button (click)="updateCount(quantityAction.DecreaseByOne)" type="button">-</button>
-      <span class="count">{{ quantity() }}</span>
-      <button (click)="updateCount(quantityAction.IncreaseByOne)" type="button">+</button>
+      <button
+        type="button"
+        aria-label="Decrease quantity"
+        (click)="updateCount(quantityAction.DecreaseByOne)"
+      >
+        −
+      </button>
+      <span class="count" aria-live="polite">{{ quantity() }}</span>
+      <button
+        type="button"
+        aria-label="Increase quantity"
+        (click)="updateCount(quantityAction.IncreaseByOne)"
+      >
+        +
+      </button>
     </div>
     <div class="total-price">
       ${{ itemInp().currentPrice * quantity() | number: numberFormat.Currency }}

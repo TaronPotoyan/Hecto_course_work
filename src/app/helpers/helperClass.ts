@@ -5,15 +5,10 @@ import * as Interfaces from '../../app/models/interface';
 
 export class Helper {
   static getSocialMedias() {
-    const socialMedia =  Object.values(Enums.SocialMedia);
-    const mediaLinks = Object.values(Enums.SocialMediaLinks);
-
-    return socialMedia.map((name , index) => {
-      return {
-        mediaName : name,
-        link : mediaLinks[index]
-      }
-    });
+    return Object.values(Enums.SocialMedia).map((name) => ({
+      mediaName: name,
+      link: Enums.SocialMediaLinks[name],
+    }));
   }
 
   static getFooterSections(): Interfaces.IFooterSection[] {
@@ -37,14 +32,13 @@ export class Helper {
   }
 
   static getRouteMenu() {
-    return  [
+    return [
       { label: Enums.RouteMenuEnum.Heckto, route: Enums.AppRoutes.Home },
       { label: Enums.RouteMenuEnum.Home, route: Enums.AppRoutes.Home },
       { label: Enums.RouteMenuEnum.Products, route: Enums.AppRoutes.Products },
-      { label: Enums.RouteMenuEnum.Blog, route: Enums.AppRoutes.Blog},
+      { label: Enums.RouteMenuEnum.Blog, route: Enums.AppRoutes.Blog },
       { label: Enums.RouteMenuEnum.Contact, route: Enums.AppRoutes.Contact },
     ];
-
   }
 
   static getDiscountExtensionText() {
@@ -95,7 +89,6 @@ export class Helper {
       };
       result.push(brendDescription);
     });
-    console.log(result);
     return result;
   }
   static getBrendNames() {
@@ -137,7 +130,7 @@ export class Helper {
       { id: 'p2', label: '$150 - $350', min: 150, max: 350 },
       { id: 'p3', label: '$350 - $500', min: 350, max: 500 },
       { id: 'p4', label: '$550 - $800', min: 550, max: 800 },
-      { id: 'p5', label: '$800+', min: 800, max: undefined },
+      { id: 'p5', label: '$800+', min: 800, max: null },
     ];
   }
 

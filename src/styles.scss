@@ -1,18 +1,57 @@
 // src/styles.scss
-/* You can add global styles to this file, and also import other style files */
-
-@use '../src/app/styles/variables';
+@use '../src/app/styles/theme';
+@use '../src/app/styles/variables' as *;
 @use '../src/app/styles/buttons' as *;
 @use '../src/app/styles/typography' as *;
 @use '../src/app/styles/global' as *;
 @use '../src/app/styles/mixins' as *;
 
 * {
-    margin: 0;
-    box-sizing: border-box;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-    font-family: 'Josefin Sans', sans-serif;
-    height: 100%;
+  font-family: 'Josefin Sans', sans-serif;
+  min-height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+}
+
+// Dark navy line icons that need to flip in dark mode
+.icon-adaptive {
+  filter: var(--icon-filter);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

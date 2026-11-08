@@ -4,6 +4,7 @@
 .product--big {
   max-width: 416px !important;
   min-height: 475px !important;
+  max-height: none !important;
   .product__img {
     max-width: none !important;
     width: 100% !important;
@@ -22,9 +23,11 @@
   max-width: 304px;
   max-height: 344px;
   width: 100%;
-  background: #fff;
+  background: $surface;
   transition: all 0.3s ease;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: $shadow-sm;
+  border-radius: 6px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -39,7 +42,7 @@
   }
   &__img {
     height: 232px;
-    background: #f6f7fb;
+    background: $surface-muted;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -55,6 +58,10 @@
       object-fit: cover;
       display: block;
     }
+  }
+  &__fullIn .trend-prices {
+    gap: 1rem;
+    margin-top: 0.75rem;
   }
   &__actions {
     position: absolute;
@@ -106,7 +113,7 @@
 
 .product.is-hovered {
   transform: translateY(-10px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: $shadow-md;
   .product__actions {
     opacity: 1;
     transform: translateX(0);
@@ -120,6 +127,10 @@
 .icon-circle {
   width: 30px;
   height: 30px;
+  padding: 0;
+  border: none;
+  background: $surface;
+  cursor: pointer;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -191,7 +202,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(16, 23, 80, 0.85);
+  padding: 16px;
+  background: var(--color-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -246,8 +258,8 @@
   }
 }
 
-$text-navy: #151875;
-$text-light-blue: #8a8fb9;
+$text-navy: $text-strong;
+$text-light-blue: $grey-3;
 $star-gold: #ffc416;
 $star-empty: #e2e2fb;
 // Shared Styles for Shop Layouts
@@ -285,7 +297,7 @@ $star-empty: #e2e2fb;
 }
 
 .product-description {
-  color: #9096ad;
+  color: $grey-3;
   font-size: 14px;
   line-height: 1.6;
   margin-bottom: 15px;
@@ -326,5 +338,17 @@ $star-empty: #e2e2fb;
   .product__img {
     flex: 0 0 300px;
     height: auto;
+  }
+}
+
+// Touch screens can't hover: keep actions visible
+@media (hover: none) {
+  .product__actions {
+    opacity: 1;
+    transform: none;
+  }
+  .view-details-btn {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }

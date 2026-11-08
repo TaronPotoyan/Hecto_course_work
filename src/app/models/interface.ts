@@ -66,7 +66,7 @@ export interface IPriceRange {
   id: string;
   label: string;
   min?: number;
-  max?: number;
+  max?: number | null;
 }
 
 export interface IFilterGroupConfig {

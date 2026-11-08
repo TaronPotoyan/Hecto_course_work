@@ -1,107 +1,104 @@
 // src/app/pages/productDetailsPage/productDetailsPage.component.ts
-// src/pages/productDetailsPage/productDetailsPage.component.ts
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { IProduct } from '../../models/interface';
-import { ActivatedRoute } from '@angular/router';
-import { DataBase } from '../../services/dataBaseService/dataBase';
-import { ProductComponent } from '../../product/product.component';
-import { CommonModule } from '@angular/common';
-import { NavigatorService } from '../../services/navigatorService/navigatorService';
+import { Component, computed, effect, inject, signal, PLATFORM_ID } from '@angular/core';
+import { DecimalPipe, isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { IFormInput, IProductNav, IDiscountNavItem } from '../../models/interface';
+import { map } from 'rxjs';
+import { DataBase } from '../../services/dataBaseService/dataBase';
+import { LocalStorageService } from '../../services/localstorageService/localStorageService';
+import { ToastService } from '../../services/toastService/toastService';
+import { ProductComponent } from '../../product/product.component';
+import { IFormInput } from '../../models/interface';
 import { Helper } from '../../helpers/helperClass';
-import {Event, Router, NavigationStart, NavigationEnd} from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NumberFormat } from '../../models/enum';
+import { DEFAULT_STAR_COUNT, NumberFormat, ProductDetailTab } from '../../models/enum';
 
 @Component({
   selector: 'app-product-details-component',
-  imports: [ProductComponent, CommonModule, ReactiveFormsModule],
+  imports: [ProductComponent, DecimalPipe, ReactiveFormsModule, RouterLink],
   templateUrl: './productDetailsPage.component.html',
   styleUrl: './productDetailsPage.component.scss',
-  providers: [DataBase],
 })
-export class ProductDetailsPageComponent implements OnInit {
+export class ProductDetailsPageComponent {
   private route = inject(ActivatedRoute);
-  private dbService = inject(DataBase);
-  private navigator = inject(NavigatorService);
+  protected dbService = inject(DataBase);
+  private basket = inject(LocalStorageService);
+  private toast = inject(ToastService);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  
-  readonly defaultStarCount = 5;
   readonly cartFormInfo: IFormInput[] = Helper.getCartFormInfo();
-  readonly productDetailsNav: IProductNav[] = Helper.getProductDetailsNav();
-  readonly discountNavItems: IDiscountNavItem[] = Helper.getDiscountNavItems();
+  readonly tabs = Object.values(ProductDetailTab);
+  readonly tab = ProductDetailTab;
   readonly productMoreDetailsInfo = Helper.getProductMoreDetailsInfo();
   readonly numFormat = NumberFormat;
 
   paymentForm = new FormGroup({
-    cardNumber: new FormControl('', [Validators.required, Validators.pattern('^[0-9 ]*$')]),
-    expDate: new FormControl('', [Validators.required]),
-    cvv: new FormControl('', [Validators.required, Validators.maxLength(3)]),
+    cardNumber: new FormControl('', [Validators.required, Validators.pattern('^[0-9 ]{12,19}$')]),
+    expDate: new FormControl('', [
+      Validators.required,
+      Validators.pattern('^(0[1-9]|1[0-2])/[0-9]{2}$'),
+    ]),
+    cvv: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{3}$')]),
     holderName: new FormControl('', [Validators.required]),
   });
 
-  product = signal<null | IProduct | null>(null);
-  starsCount = signal<number>(0);
-  stars = signal<boolean[]>([]);
-  similarItems = signal<IProduct[]>([]);
+  private readonly productId = toSignal(
+    this.route.paramMap.pipe(map((params) => Number(params.get('id')))),
+    { initialValue: NaN },
+  );
+
+  readonly product = computed(() => this.dbService.getProductById(this.productId()));
+  readonly notFound = computed(() => this.dbService.state() === 'ready' && !this.product());
+  readonly stars = computed(() =>
+    Array.from({ length: DEFAULT_STAR_COUNT }, (_, i) => i < (this.product()?.rating ?? 0)),
+  );
+  readonly similarItems = computed(() => {
+    const product = this.product();
+    return product ? this.dbService.getSimilarItems(product) : [];
+  });
+
+  activeTab = signal<ProductDetailTab>(ProductDetailTab.Description);
   showCard = signal(false);
 
-
-
-
-  ngOnInit(): void {
-    this.route.paramMap.subscribe((routObj) => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      this.stars.set([]);
-      const Productid = routObj.get('id');
-      if (Productid != null) {
-        this.configProps(+Productid);
-      } else {
-        this.navigator.handleNavigate('');
-      }
+  constructor() {
+    effect(() => {
+      this.productId();
+      this.activeTab.set(ProductDetailTab.Description);
+      if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
-  handleNavigation() {}
 
-  addToCard(showCard: boolean) {
-    this.showCard.set(showCard);
+  addToCart() {
+    const product = this.product();
+    if (product) this.basket.addToBasket(product);
+  }
+
+  addToWishlist() {
+    const product = this.product();
+    if (product) this.toast.show(`${product.name} added to your wishlist`);
+  }
+
+  openCardForm() {
+    this.showCard.set(true);
   }
 
   onPay() {
-    console.log(this.paymentForm);
-    if (this.paymentForm.valid) {
-    } else {
-      alert('Please fill in all fields correctly.');
+    if (this.paymentForm.invalid) {
+      this.paymentForm.markAllAsTouched();
+      this.toast.error('Please fill in all card fields correctly.');
+      return;
     }
+    this.toast.success('Payment received (demo). Thank you for your order!');
+    this.paymentForm.reset();
+    this.closeCardForm();
   }
 
   closeCardForm() {
     this.showCard.set(false);
   }
 
-  private configProps(Productid: number) {
-    this.product.set(this.dbService.getProductById(+Productid));
-    const Product: IProduct | null = this.product();
-
-    if (Product == null) {
-      alert('Product Not found');
-      return;
-    }
-
-    this.starsCount.set(Product.rating ?? 0);
-
-    const similarItems: IProduct[] = this.dbService.getSimilarItems(Product.name) ?? [];
-    const rating: number = this.product()?.rating ?? 0;
-    this.similarItems.set(similarItems);
-    if (this.starsCount() != null) {
-      for (let i = 1; i <= this.defaultStarCount; ++i) {
-        if (i <= rating) {
-          this.stars().push(true);
-        } else {
-          this.stars().push(false);
-        }
-      }
-    }
+  isInvalid(name: string): boolean {
+    const control = this.paymentForm.get(name);
+    return !!control && control.invalid && control.touched;
   }
 }

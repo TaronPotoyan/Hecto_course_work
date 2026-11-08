@@ -1,88 +1,111 @@
 // src/app/header/header.component.ts
 import {
   Component,
-  OnInit,
   signal,
   inject,
   computed,
-  Signal,
   effect,
   ElementRef,
   HostListener,
+  DestroyRef,
 } from '@angular/core';
 import { DiscountComponent } from './discount.component/discount.component';
-import { IDiscountProduct, IMenuOption } from '../models/interface';
-import { CommonModule } from '@angular/common';
+import { IMenuOption } from '../models/interface';
+import { FormsModule } from '@angular/forms';
 import { FilterProducts } from '../services/filterProductsService/filterProducts';
 import { NavigatorService } from '../services/navigatorService/navigatorService';
-import { FormsModule } from '@angular/forms';
 import { DataBase } from '../services/dataBaseService/dataBase';
+import { LocalStorageService } from '../services/localstorageService/localStorageService';
+import { ThemeService } from '../services/themeService/themeService';
+import { ToastService } from '../services/toastService/toastService';
+import { AuthService } from '../services/authService/authService';
+import {
+  LanguageCode,
+  LanguageService,
+  LANGUAGE_OPTIONS,
+} from '../services/languageService/languageService';
 import { ActiveDropdownType } from '../models/type';
-import { MenuOptions, Currencies, Languages, AppRoutes, RouteMenuEnum } from '../models/enum';
+import { MenuOptions, Currencies, AppRoutes, RouteMenuEnum, ThemeMode } from '../models/enum';
 import { Helper } from '../helpers/helperClass';
+
+const THEME_LABELS: Record<ThemeMode, string> = {
+  [ThemeMode.Light]: '☀ Light',
+  [ThemeMode.Dark]: '☾ Dark',
+  [ThemeMode.System]: '◐ System',
+};
 
 @Component({
   selector: 'app-header',
-  imports: [DiscountComponent, CommonModule, FormsModule],
+  imports: [DiscountComponent, FormsModule],
   templateUrl: 'header.component.html',
   styleUrl: 'header.component.scss',
-  providers: [DataBase],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent {
   private navService = inject(NavigatorService);
   private filterService = inject(FilterProducts);
   private dbService = inject(DataBase);
   private eRef = inject(ElementRef);
+  private toast = inject(ToastService);
+  protected basket = inject(LocalStorageService);
+  protected theme = inject(ThemeService);
+  protected auth = inject(AuthService);
+  protected languageService = inject(LanguageService);
 
   readonly currentUrl = this.navService.currentUrl();
-  readonly menuOptionsEnum = MenuOptions;
-  readonly languages = Object.values(Languages);
-  readonly currencies = Object.values(Currencies);
   readonly menuOptions = Helper.getMenuOptions();
   readonly navItems = Helper.getRouteMenu();
   readonly routeMenue = RouteMenuEnum;
+  readonly themeLabels = THEME_LABELS;
+
+  selectedCurrency = signal<string>(Currencies.USD);
+  searchQuery = signal('');
+  activeDropdown = signal<ActiveDropdownType>('none');
+  mobileMenuOpen = signal(false);
+  currentIndex = signal<number>(0);
+
+  readonly discountes = computed(() => this.dbService.getDiscountedProducts());
+
   readonly dropdownConfigs = computed(() => [
     {
       id: 'lang' as const,
-      label: this.selectedLanguage(),
-      data: this.languages,
+      label: this.languageService.labelFor(this.languageService.language()),
+      data: LANGUAGE_OPTIONS.map((o) => o.code) as string[],
     },
     {
       id: 'curr' as const,
       label: this.selectedCurrency(),
-      data: this.currencies,
+      data: Object.values(Currencies) as string[],
+    },
+    {
+      id: 'theme' as const,
+      label: THEME_LABELS[this.theme.mode()],
+      data: Object.values(ThemeMode) as string[],
     },
   ]);
 
-  activeNavIndex = signal<number>(-1);
-  discountes: IDiscountProduct[] = [];
-  currentIndex = signal<number>(0);
-  showHero!: Signal<boolean>;
-  selectedLanguage = signal(Languages.English);
-  selectedCurrency = signal(Currencies.USD);
-  searchQuery = signal('');
-  activeDropdown = signal<ActiveDropdownType>('none');
-  intervalId: ReturnType<typeof setInterval> | null = null;
+  readonly showHero = computed(() => {
+    const url = this.currentUrl().split('?')[0];
+    return url === '/' || url === `/${AppRoutes.HomeAlias}`;
+  });
+
+  private intervalId: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     effect(() => {
-      if (this.showHero()) {
+      if (this.showHero() && this.discountes().length > 1) {
         this.startAutoSlide();
       } else {
         this.stopAutoSlide();
       }
     });
-  }
 
-  ngOnInit(): void {
-    const urlSignal = this.navService.trackRouteChanges();
-
-    this.showHero = computed(() => {
-      const url = urlSignal().split('?')[0];
-      return url === '/' || url === `/${AppRoutes.HomeAlias}` || url.endsWith(AppRoutes.HomeAlias);
+    // Close the mobile menu after navigating
+    effect(() => {
+      this.currentUrl();
+      this.mobileMenuOpen.set(false);
     });
 
-    this.discountes = this.dbService.getDiscountedProducts();
+    inject(DestroyRef).onDestroy(() => this.stopAutoSlide());
   }
 
   @HostListener('document:click', ['$event'])
@@ -92,57 +115,83 @@ export class HeaderComponent implements OnInit {
     }
   }
 
+  @HostListener('document:keydown.escape')
+  handleEscape() {
+    this.activeDropdown.set('none');
+    this.mobileMenuOpen.set(false);
+  }
+
   toggleDropdown(menu: ActiveDropdownType) {
     this.activeDropdown.update((prev) => (prev === menu ? 'none' : menu));
   }
 
-  toggleSlide(isNext: boolean) {
-    const len = this.discountes.length;
-    if (len <= 1) return;
-    const step = isNext ? 1 : -1;
-    this.currentIndex.update((i) => (i + step + len) % len);
+  toggleMobileMenu() {
+    this.mobileMenuOpen.update((open) => !open);
+  }
+
+  dropdownItemLabel(menuId: ActiveDropdownType, item: string): string {
+    if (menuId === 'theme') return THEME_LABELS[item as ThemeMode];
+    if (menuId === 'lang') return this.languageService.labelFor(item as LanguageCode);
+    return item;
+  }
+
+  isSelected(menuId: ActiveDropdownType, item: string): boolean {
+    if (menuId === 'lang') return this.languageService.language() === item;
+    if (menuId === 'curr') return this.selectedCurrency() === item;
+    return this.theme.mode() === item;
   }
 
   selectItem(menuId: ActiveDropdownType, value: string) {
-    if (menuId === 'lang') {
-      this.selectedLanguage.set(value as Languages);
-    } else if (menuId === 'curr') {
-      this.selectedCurrency.set(value as Currencies);
-    }
-
+    if (menuId === 'lang') this.languageService.setLanguage(value as LanguageCode);
+    else if (menuId === 'curr') this.selectedCurrency.set(value);
+    else if (menuId === 'theme') this.theme.setMode(value as ThemeMode);
     this.activeDropdown.set('none');
+  }
+
+  toggleSlide(isNext: boolean) {
+    const len = this.discountes().length;
+    if (len <= 1) return;
+    const step = isNext ? 1 : -1;
+    this.currentIndex.update((i) => (i + step + len) % len);
   }
 
   getTransform(): string {
     return `translateX(-${this.currentIndex() * 100}%)`;
   }
 
-    isActiveNav(route: string, label: string): boolean {
-      const url = this.currentUrl().split('?')[0];
-      console.log(label , RouteMenuEnum.Heckto);
-
-      if (label === RouteMenuEnum.Heckto) {
-        return false;
-      }
-
-      if (route === AppRoutes.Home || route === AppRoutes.HomeAlias) {
-        return url === '/' || url === `/${AppRoutes.HomeAlias}`;
-      }
-
-      return url === `/${route}` || url.startsWith(`/${route}/`);
+  isActiveNav(route: string, label: string): boolean {
+    if (label === RouteMenuEnum.Heckto) return false;
+    const url = this.currentUrl().split('?')[0];
+    if (route === AppRoutes.Home || route === AppRoutes.HomeAlias) {
+      return url === '/' || url === `/${AppRoutes.HomeAlias}`;
     }
+    return url === `/${route}` || url.startsWith(`/${route}/`);
+  }
 
+  handleNavigation(path: string, params?: string) {
+    if (path === AppRoutes.Heckto) path = AppRoutes.Home;
+    this.navService.handleNavigate(path, params);
+  }
 
-
-    handleNavigation(path: string, params?: string) {
-      if (path === AppRoutes.Heckto) {
-        path = AppRoutes.Home;
-      }
-
-      this.navService.handleNavigate(path, params);
+  handleMenuOption(option: IMenuOption) {
+    if (option.optionName === MenuOptions.Wishings) {
+      this.toast.show('Wishlist is coming soon');
+      return;
     }
+    this.handleNavigation(option.optionName);
+  }
 
+  menuOptionLabel(option: IMenuOption): string {
+    if (option.optionName === MenuOptions.Basket) return '';
+    if (option.optionName === MenuOptions.Login && this.auth.user()) {
+      return this.auth.user()!.name;
+    }
+    return option.optionName;
+  }
 
+  isBasket(option: IMenuOption): boolean {
+    return option.optionName === MenuOptions.Basket;
+  }
 
   goToSlide(index: number) {
     this.currentIndex.set(index);
@@ -151,24 +200,20 @@ export class HeaderComponent implements OnInit {
 
   handleSearch() {
     const name = this.searchQuery();
-    this.searchQuery.set('');
-    const index = this.filterService.filterProductsByName(name);
-    if (index === -1 || index === null || index === undefined) {
-      alert('Item not found');
+    if (!name.trim()) return;
+    const id = this.filterService.findProductIdByName(name);
+    if (id === null) {
+      this.toast.error(`No product found for "${name.trim()}"`);
       return;
     }
-    this.handleNavigation(AppRoutes.Products, index.toString());
-  }
-
-  isBasket(option: IMenuOption): boolean {
-    return option.optionName === this.menuOptionsEnum.Basket;
+    this.searchQuery.set('');
+    this.handleNavigation(AppRoutes.Products, id.toString());
   }
 
   private startAutoSlide() {
     this.stopAutoSlide();
-    this.intervalId = setInterval(() => {
-      this.toggleSlide(true);
-    }, 4000);
+    if (typeof window === 'undefined') return; // no timers during SSR
+    this.intervalId = setInterval(() => this.toggleSlide(true), 4000);
   }
 
   private stopAutoSlide() {

@@ -15,10 +15,9 @@ export class CycleProductComponent {
   hovered = signal(false);
   product = input.required<IProduct>();
 
+  /** Top categories aren't catalog items, so open the shop instead of a product page. */
   viewDetails() {
-    const param = this.product().id.toString();
-    const path = AppRoutes.Products;
-    this.navService.handleNavigate(path, param);
+    this.navService.handleNavigate(AppRoutes.Products);
   }
 
   onHover(state: boolean) {

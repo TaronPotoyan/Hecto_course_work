@@ -170,7 +170,7 @@ export const PRODUCTS: IProduct[] = [
   },
   {
     _id: 1,
-    id: 11,
+    id: 17,
     name: 'Ring',
     currentPrice: 42.0,
     originalPrice: 62.0,

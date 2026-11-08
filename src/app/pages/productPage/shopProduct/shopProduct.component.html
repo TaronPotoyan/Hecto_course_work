@@ -1,4 +1,3 @@
-
 <div
   class="product-card"
   [ngClass]="{
@@ -6,13 +5,13 @@
     grid: layout() === 'grid',
   }"
 >
-  <div class="image-container"   (click)="viewDetails()">
-    <img [src]="product().url" [alt]="product().title" />
+  <div class="image-container" (click)="viewDetails()">
+    <img [src]="product().url" [alt]="product().name" />
   </div>
 
   <div class="content-container">
     <div class="header">
-      <h3 class="heading-4">{{ product().name }}</h3>
+      <h3 class="heading-4" (click)="viewDetails()">{{ product().name }}</h3>
       <div class="rating">
         @for (item of ratingsArr; track $index) {
           <span class="fa fa-star star" [class.checked]="item <= product().rating"> </span>
@@ -30,26 +29,25 @@
     </p>
 
     <div class="actions">
-      <button>
-        <img src="Basket-icon.svg" alt="basket" (click)="handleAction(productActions.Basket)" />
+      <button type="button" aria-label="Add to cart" (click)="handleAction(productActions.Basket)">
+        <img src="Basket-icon.svg" alt="" />
       </button>
-      <button>
-        <img src="heart-icon.svg" alt="heart icon" (click)="handleAction(productActions.Like)" />
+      <button
+        type="button"
+        aria-label="Add to wishlist"
+        (click)="handleAction(productActions.Like)"
+      >
+        <img src="heart-icon.svg" alt="" />
       </button>
-      <button>
-        <img
-          src="Zoom-icon.svg"
-          alt="Zoom icon"
-          style="transform: scale(2.5)"
-          (click)="handleAction(productActions.Zoom)"
-        />
+      <button type="button" aria-label="Zoom image" (click)="handleAction(productActions.Zoom)">
+        <img class="zoom-icon" src="Zoom-icon.svg" alt="" />
       </button>
     </div>
   </div>
 </div>
 
-@if (isZoomed) {
-  <div class="zoom-overlay" (click)="isZoomed = false">
+@if (isZoomed()) {
+  <div class="zoom-overlay" (click)="toggleZoom(false)">
     <div class="zoom-content" (click)="$event.stopPropagation()">
       <img [src]="product().url" [alt]="product().name" />
       <button class="close-btn" (click)="toggleZoom(false)">Close</button>

@@ -20,5 +20,5 @@ export type CatgeroiesType =
   | 'Perfume';
 
 export type PriceType = [0, 150] | [150, 350] | [350, 500] | [550, 800] | [800, null];
-export type ActiveDropdownType = 'lang' | 'curr' | 'none';
+export type ActiveDropdownType = 'lang' | 'curr' | 'theme' | 'none';
 export type FilterOptionsType = IBrandDescription[] | boolean[][] | ICategories[] | IPriceRange[];

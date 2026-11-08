@@ -1,196 +1,133 @@
 // src/app/pages/productPage/productPage.component.ts
-import { Component, inject, OnInit, signal } from '@angular/core';
-import {Event, Router, NavigationStart, NavigationEnd} from '@angular/router';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 
-import { IProduct, IFilterSettings } from '../../models/interface';
+import { IFilterSettings, IPriceRange } from '../../models/interface';
 import { DataBase } from '../../services/dataBaseService/dataBase';
-import { CommonModule } from '@angular/common';
 import { ShopProduct } from './shopProduct/shopProduct.component';
-import {
-  BrendType,
-  DiscountProcentType,
-  RatingType,
-  CatgeroiesType,
-  PriceType,
-  LayoutType,
-} from '../../models/type';
-
+import { LayoutType, PriceType } from '../../models/type';
 import { FilterProducts } from '../../services/filterProductsService/filterProducts';
 import { FilterBy, ProductLayout, SortBy, ViewMode } from '../../models/enum';
 import { Helper } from '../../helpers/helperClass';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+const EMPTY_FILTERS: IFilterSettings = {
+  productBrand: [],
+  discountOffer: [],
+  rating: [],
+  categories: [],
+  price: [],
+};
+
+const FILTER_KEYS: Partial<Record<FilterBy, keyof IFilterSettings>> = {
+  [FilterBy.ProductBrand]: 'productBrand',
+  [FilterBy.DiscountOffer]: 'discountOffer',
+  [FilterBy.Rating]: 'rating',
+  [FilterBy.Categories]: 'categories',
+  [FilterBy.PriceFilter]: 'price',
+};
 
 @Component({
   selector: 'app-product-page',
-  imports: [CommonModule, ShopProduct],
+  imports: [NgClass, ShopProduct],
   templateUrl: './productPage.component.html',
   styleUrl: './productPage.component.scss',
-  providers: [DataBase],
 })
-export class ProductPageComponent implements OnInit {
+export class ProductPageComponent {
   private filterService = inject(FilterProducts);
-  private dbService = inject(DataBase);
+  protected dbService = inject(DataBase);
 
   readonly filterBy = FilterBy;
-  readonly brandOptions = Helper.getBrandOptions();
-  readonly brands = Helper.getBrendNames();
-  readonly discountOffer = Helper.getDiscountOffer();
-  readonly categories = Helper.getCategories();
-  readonly ratings = Helper.getRatings();
-  readonly priceRanges = Helper.getPriceRanges();
   readonly filterGroups = Helper.getFilterGroups();
   readonly viewModes = ViewMode;
   readonly layoutType = ProductLayout;
+  readonly sortOptions = SortBy;
 
-  perPageArr: number[] = [];
-  productes = signal<IProduct[]>([]);
-  viewMode = signal<'grid' | 'list'>(ProductLayout.list);
+  viewMode = signal<LayoutType>(ProductLayout.grid);
   sortBy = signal<string>(SortBy.HighToLow);
   pageNum = signal(1);
   perPage = signal(10);
-  selectedBrands: Set<BrendType> = new Set<BrendType>();
-  selectedDiscounts: Set<DiscountProcentType> = new Set<DiscountProcentType>();
-  selectedRatings: Set<RatingType> = new Set<RatingType>();
-  selectedCategories: Set<CatgeroiesType> = new Set<CatgeroiesType>();
-  selectedPrices: Set<PriceType> = new Set<PriceType>();
-  filteredProducts = signal<IProduct[]>([]);
+  filters = signal<IFilterSettings>(EMPTY_FILTERS);
+  filtersOpen = signal(false);
 
-  private readonly router = inject(Router);
+  readonly filteredProducts = computed(() => {
+    this.dbService.getProducts(); // re-run when catalog loads
+    const list = [...this.filterService.filterProducts(this.filters())];
+    const dir = this.sortBy() === SortBy.LowToHigh ? 1 : -1;
+    return list.sort((a, b) => (a.currentPrice - b.currentPrice) * dir);
+  });
+
+  readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.filteredProducts().length / this.perPage())),
+  );
+  readonly perPageArr = computed(() => Array.from({ length: this.pageCount() }, (_, i) => i + 1));
+  readonly productes = computed(() => {
+    const start = (this.pageNum() - 1) * this.perPage();
+    return this.filteredProducts().slice(start, start + this.perPage());
+  });
+  readonly activeFilterCount = computed(() =>
+    Object.values(this.filters()).reduce((acc, list) => acc + list.length, 0),
+  );
 
   constructor() {
-    this.router.events.pipe(takeUntilDestroyed()).subscribe((event: Event) => {
-      if (event instanceof NavigationStart) {
-        console.log('Navigation starting:', event.url);
-      }
-      if (event instanceof NavigationEnd) {
-       
-        console.log('Navigation completed:', event.url);
-      }
+    // Keep the current page in range when filters shrink the result set
+    effect(() => {
+      if (this.pageNum() > this.pageCount()) this.pageNum.set(this.pageCount());
     });
   }
-  
-  
-  ngOnInit(): void {
-    this.loadProducts();
+
+  /** Value stored in the filter for a checkbox option. */
+  optionValue(option: { value?: unknown } & Partial<IPriceRange>, type: FilterBy): unknown {
+    if (type === FilterBy.PriceFilter) return [option.min ?? 0, option.max ?? null] as PriceType;
+    return option.value;
   }
 
-
-
-
-  toggleSelection<T>(value: T, type: string) {
-    console.log(value, type);
-    switch (type) {
-      case FilterBy.ProductBrand:
-        if (this.selectedBrands.has(value as BrendType)) {
-          this.selectedBrands.delete(value as BrendType);
-        } else {
-          this.selectedBrands.add(value as BrendType);
-        }
-        break;
-
-      case FilterBy.DiscountOffer:
-        if (this.selectedDiscounts.has(value as DiscountProcentType)) {
-          this.selectedDiscounts.delete(value as DiscountProcentType);
-        } else {
-          this.selectedDiscounts.add(value as DiscountProcentType);
-        }
-        break;
-
-      case FilterBy.Rating:
-        if (this.selectedRatings.has(value as RatingType)) {
-          this.selectedRatings.delete(value as RatingType);
-        } else {
-          this.selectedRatings.add(value as RatingType);
-        }
-        break;
-      case FilterBy.Categories:
-        if (this.selectedCategories.has(value as CatgeroiesType)) {
-          this.selectedCategories.delete(value as CatgeroiesType);
-        } else {
-          this.selectedCategories.add(value as CatgeroiesType);
-        }
-        break;
-      default:
-        break;
-    }
-    this.applyFilters();
+  isChecked(value: unknown, type: FilterBy): boolean {
+    const key = FILTER_KEYS[type];
+    if (!key) return false;
+    return (this.filters()[key] as unknown[]).some((v) => this.sameValue(v, value));
   }
 
-  applyFilters() {
-    const filterObj: IFilterSettings = {
-      productBrand: [...this.selectedBrands],
-      discountOffer: [...this.selectedDiscounts],
-      rating: [...this.selectedRatings],
-      categories: [...this.selectedCategories],
-      price: [...this.selectedPrices],
-    };
-
-    const filtered = this.filterService.filterProducts(filterObj);
-    this.filteredProducts.set(filtered);
-
+  toggleSelection(value: unknown, type: FilterBy) {
+    const key = FILTER_KEYS[type];
+    if (!key) return;
+    this.filters.update((current) => {
+      const list = current[key] as unknown[];
+      const next = list.some((v) => this.sameValue(v, value))
+        ? list.filter((v) => !this.sameValue(v, value))
+        : [...list, value];
+      return { ...current, [key]: next };
+    });
     this.pageNum.set(1);
-    this.updateProductsForPage();
+  }
+
+  clearFilters() {
+    this.filters.set(EMPTY_FILTERS);
+    this.pageNum.set(1);
   }
 
   goToPage(to: number) {
-    const pageCount = this.perPageArr.length;
-    if (to > pageCount) this.pageNum.set(1);
-    else if (to <= 0) this.pageNum.set(pageCount);
+    const count = this.pageCount();
+    if (to > count) this.pageNum.set(1);
+    else if (to <= 0) this.pageNum.set(count);
     else this.pageNum.set(to);
-
-    this.updateProductsForPage();
   }
 
   toggleView(mode: LayoutType): void {
     this.viewMode.set(mode);
   }
 
-  onSortChange(event: any): void {
-    const value = (event?.target as HTMLSelectElement).value;
-    this.sortBy.set(value);
-    this.applySort(); 
-  }
-
-  onPerPageChange(event: any): void {
-    const value = Number((event?.target as HTMLSelectElement).value);
-    this.perPage.set(value);
+  onSortChange(event: Event): void {
+    this.sortBy.set((event.target as HTMLSelectElement).value);
     this.pageNum.set(1);
-    this.updateProductsForPage();
   }
 
-  private loadProducts(): void {
-    const allProducts = this.dbService.getProducts();
-    this.filteredProducts.set(allProducts);
-    this.updateProductsForPage();
+  onPerPageChange(event: Event): void {
+    this.perPage.set(Number((event.target as HTMLSelectElement).value));
+    this.pageNum.set(1);
   }
 
-  private applySort(): void {
-    const current = [...this.productes()];
-    
-    if (this.sortBy() === SortBy.HighToLow) {
-      current.sort((a, b) => b.currentPrice - a.currentPrice);
-    } 
-
-    if (this.sortBy() === SortBy.LowToHigh) {
-      current.sort((a, b) => a.currentPrice - b.currentPrice);
-    }
-    
-    this.productes.set(current);
-  }
-
-  private updateProductsForPage() {
-    const start = (this.pageNum() - 1) * this.perPage();
-    const end = start + this.perPage();
-
-    const pageProducts = this.filteredProducts().slice(start, end);
-    this.productes.set(pageProducts);
-
-    const totalPages = Math.ceil(this.filteredProducts().length / this.perPage());
-    this.perPageArr = [];
-    for (let i = 1; i <= totalPages; i++) {
-      this.perPageArr.push(i);
-    }
-
-    this.applySort();
+  private sameValue(a: unknown, b: unknown): boolean {
+    if (Array.isArray(a) && Array.isArray(b)) return a[0] === b[0] && a[1] === b[1];
+    return a === b;
   }
 }

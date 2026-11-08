@@ -10,9 +10,14 @@
 >
   <div class="product__actions">
     @for (action of productActions; track $index) {
-      <div class="icon-circle" (click)="handleProductAction(action.type)">
-        <img [src]="action.iconUrl" [alt]="action.type" />
-      </div>
+      <button
+        type="button"
+        class="icon-circle"
+        [attr.aria-label]="action.type"
+        (click)="$event.stopPropagation(); handleProductAction(action.type)"
+      >
+        <img [src]="action.iconUrl" alt="" />
+      </button>
     }
   </div>
 
@@ -30,9 +35,7 @@
     @case (productType.Trend) {
       <div class="product__fullIn">
         <h3 class="product-title">{{ product().name }}</h3>
-        <br />
-        <br />
-        <div class="flex-row">
+        <div class="flex-row trend-prices">
           <p class="product-price">${{ product().currentPrice | number: numberFormat.Currency }}</p>
           <p class="product-price grey">
             <s>${{ product().originalPrice | number: numberFormat.Currency }}</s>
@@ -60,11 +63,11 @@
           </div>
         </div>
 
-        <p class="subtitle-4 small-title" [ngStyle]="{ color: isHovered() ? '#FB2E86' : '' }">
+        <p class="subtitle-4 small-title" [class.primary-color]="isHovered()">
           {{ product().title }}
         </p>
         <p class="home-description paragraph">{{ product().description }}</p>
-        <a class="read-more-link" (click)="viewDetailes()" class="link">Read More</a>
+        <a class="link read-more-link" (click)="viewDetailes()">Read More</a>
       </div>
     }
     @default {
@@ -77,8 +80,8 @@
   }
 </div>
 
-@if (isZoomed) {
-  <div class="zoom-overlay" (click)="isZoomed = false">
+@if (isZoomed()) {
+  <div class="zoom-overlay" (click)="toggleZoom(false)">
     <div class="zoom-content" (click)="$event.stopPropagation()">
       <img [src]="product().url" [alt]="product().name" />
       <button class="close-btn" (click)="toggleZoom(false)">Close</button>
