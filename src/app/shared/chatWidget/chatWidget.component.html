@@ -40,36 +40,37 @@
     <div class="chat-panel__messages" #messageList>
       <div class="bubble">{{ t().greeting }}</div>
 
-      @if (!hasConversation()) {
-        <div class="suggestions">
-          <span class="suggestions__title">{{ t().suggestionsTitle }}</span>
-          @for (question of t().suggestions; track question) {
-            <button type="button" class="suggestion" (click)="ask(question)">{{ question }}</button>
-          }
-        </div>
+      @for (message of chat.messages(); track $index) {
+        @if (message.role === 'user') {
+          <div class="bubble bubble--user">{{ message.text ?? faq(message.faqId)?.question }}</div>
+        } @else {
+          <div class="bubble">
+            @if (faq(message.faqId); as item) {
+              <span>{{ item.answer }}</span>
+              @if (item.link) {
+                <a class="bubble__link" [routerLink]="item.link.path">{{ item.link.label }} →</a>
+              }
+            } @else {
+              <span>{{ t().noAnswer }}</span>
+            }
+            @if (showsContact(message.faqId)) {
+              <span class="contact">
+                <span>{{ t().emailLabel }}: <a [href]="'mailto:' + contact.email">{{ contact.email }}</a></span>
+                <span>{{ t().phoneLabel }}: <a [href]="contact.phoneHref">{{ contact.phone }}</a></span>
+              </span>
+            }
+          </div>
+        }
       }
 
-      @for (message of chat.messages(); track $index) {
-        <div
-          class="bubble"
-          [class.bubble--user]="message.role === 'user'"
-          [class.bubble--error]="!!message.errorCode"
-        >
-          @if (message.errorCode) {
-            {{ t().errors[message.errorCode] }}
-          } @else if (isTyping(message)) {
-            <span class="typing" [attr.aria-label]="t().typing"><i></i><i></i><i></i></span>
-          } @else {
-            @for (segment of segments(message.content); track $index) {
-              @if (segment.link) {
-                <a [routerLink]="segment.link">{{ segment.text }}</a>
-              } @else {
-                <span>{{ segment.text }}</span>
-              }
-            }
-          }
-        </div>
-      }
+      <div class="suggestions">
+        <span class="suggestions__title">
+          {{ hasConversation() ? t().moreQuestions : t().suggestionsTitle }}
+        </span>
+        @for (item of t().faq; track item.id) {
+          <button type="button" class="suggestion" (click)="ask(item.id)">{{ item.question }}</button>
+        }
+      </div>
     </div>
 
     <form class="chat-panel__composer" (ngSubmit)="send()">
@@ -83,20 +84,9 @@
         (ngModelChange)="draft.set($event)"
         (keydown)="onKeydown($event)"
       ></textarea>
-      @if (chat.isStreaming()) {
-        <button type="button" class="send-btn" [attr.aria-label]="t().stop" (click)="chat.stop()">
-          ■
-        </button>
-      } @else {
-        <button
-          type="submit"
-          class="send-btn"
-          [disabled]="!draft().trim()"
-          [attr.aria-label]="t().send"
-        >
-          ➤
-        </button>
-      }
+      <button type="submit" class="send-btn" [disabled]="!draft().trim()" [attr.aria-label]="t().send">
+        ➤
+      </button>
     </form>
   </section>
 }

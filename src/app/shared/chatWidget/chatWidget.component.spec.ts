@@ -2,9 +2,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ChatWidgetComponent } from './chatWidget.component';
-import { ChatService } from '../../services/chatService/chatService';
 import { LanguageService } from '../../services/languageService/languageService';
-import { CHAT_STRINGS } from './chatI18n';
+import { CHAT_STRINGS, SUPPORT_CONTACT } from './chatI18n';
 
 describe('ChatWidgetComponent', () => {
   let fixture: ComponentFixture<ChatWidgetComponent>;
@@ -32,7 +31,7 @@ describe('ChatWidgetComponent', () => {
     await open();
     expect(el.querySelector('.bubble')?.textContent).toContain(CHAT_STRINGS.en.greeting);
     const suggestions = [...el.querySelectorAll('.suggestion')].map((b) => b.textContent?.trim());
-    expect(suggestions).toEqual(CHAT_STRINGS.en.suggestions);
+    expect(suggestions).toEqual(CHAT_STRINGS.en.faq.map((f) => f.question));
   });
 
   it('switches the chat to Armenian and Russian', async () => {
@@ -44,7 +43,7 @@ describe('ChatWidgetComponent', () => {
     fixture.detectChanges();
     expect(el.querySelector('.chat-panel__header h2')?.textContent).toBe(CHAT_STRINGS.hy.title);
     expect(el.querySelector('.suggestion')?.textContent?.trim()).toBe(
-      CHAT_STRINGS.hy.suggestions[0],
+      CHAT_STRINGS.hy.faq[0].question,
     );
 
     buttons[2].click();
@@ -53,20 +52,45 @@ describe('ChatWidgetComponent', () => {
     expect(TestBed.inject(LanguageService).language()).toBe('ru');
   });
 
-  it('sends a suggested question with the selected language', async () => {
-    const chat = TestBed.inject(ChatService);
-    const send = vi.spyOn(chat, 'send').mockResolvedValue();
+  it('answers a popular question from the FAQ', async () => {
     await open();
     el.querySelectorAll<HTMLButtonElement>('.suggestion')[0].click();
-    expect(send).toHaveBeenCalledWith(CHAT_STRINGS.en.suggestions[0]);
+    fixture.detectChanges();
+    const bubbles = [...el.querySelectorAll('.bubble')].map((b) => b.textContent ?? '');
+    expect(bubbles[1]).toContain(CHAT_STRINGS.en.faq[0].question);
+    expect(bubbles[2]).toContain(CHAT_STRINGS.en.faq[0].answer);
+  });
+
+  const type = (text: string) => {
+    const input = el.querySelector('textarea') as HTMLTextAreaElement;
+    input.value = text;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    (el.querySelector('.send-btn') as HTMLButtonElement).click();
+    fixture.detectChanges();
+  };
+
+  it('matches a typed question to the FAQ', async () => {
+    await open();
+    type('what is the delivery price?');
+    const last = [...el.querySelectorAll('.bubble')].pop()?.textContent ?? '';
+    expect(last).toContain(CHAT_STRINGS.en.faq[0].answer);
+  });
+
+  it('gives support contacts for an unknown question', async () => {
+    await open();
+    type('Do you sell bicycles?');
+    const last = [...el.querySelectorAll('.bubble')].pop()?.textContent ?? '';
+    expect(last).toContain(CHAT_STRINGS.en.noAnswer);
+    expect(last).toContain(SUPPORT_CONTACT.email);
+    expect(last).toContain(SUPPORT_CONTACT.phone);
   });
 
   it('every language has the same set of strings', () => {
     const shape = (o: object) => Object.keys(o).sort();
     for (const lang of ['hy', 'ru'] as const) {
       expect(shape(CHAT_STRINGS[lang])).toEqual(shape(CHAT_STRINGS.en));
-      expect(shape(CHAT_STRINGS[lang].errors)).toEqual(shape(CHAT_STRINGS.en.errors));
-      expect(CHAT_STRINGS[lang].suggestions.length).toBe(CHAT_STRINGS.en.suggestions.length);
+      expect(CHAT_STRINGS[lang].faq.map((f) => f.id)).toEqual(CHAT_STRINGS.en.faq.map((f) => f.id));
     }
   });
 });

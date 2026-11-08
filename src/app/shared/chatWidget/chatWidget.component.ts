@@ -10,20 +10,13 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ChatService, IChatMessage } from '../../services/chatService/chatService';
+import { ChatService } from '../../services/chatService/chatService';
 import {
   LANGUAGE_OPTIONS,
   LanguageCode,
   LanguageService,
 } from '../../services/languageService/languageService';
-import { CHAT_STRINGS } from './chatI18n';
-
-interface ISegment {
-  text: string;
-  link?: string;
-}
-
-const PRODUCT_LINK = /(\/products\/\d+)/g;
+import { CHAT_STRINGS, FaqId, IFaqItem, SUPPORT_CONTACT, matchFaq } from './chatI18n';
 
 @Component({
   selector: 'app-chat-widget',
@@ -35,6 +28,7 @@ export class ChatWidgetComponent {
   protected chat = inject(ChatService);
   protected languageService = inject(LanguageService);
   protected readonly languages = LANGUAGE_OPTIONS;
+  protected readonly contact = SUPPORT_CONTACT;
   protected readonly t = computed(() => CHAT_STRINGS[this.languageService.language()]);
   protected readonly hasConversation = computed(() => this.chat.messages().length > 0);
 
@@ -45,7 +39,7 @@ export class ChatWidgetComponent {
   private input = viewChild<ElementRef<HTMLTextAreaElement>>('input');
 
   constructor() {
-    // Keep the newest message in view while the reply streams in.
+    // Keep the newest message in view.
     afterRenderEffect(() => {
       this.chat.messages();
       const el = this.messageList()?.nativeElement;
@@ -63,14 +57,14 @@ export class ChatWidgetComponent {
   }
 
   send() {
-    const text = this.draft();
-    if (!text.trim()) return;
+    const text = this.draft().trim();
+    if (!text) return;
     this.draft.set('');
-    this.chat.send(text);
+    this.chat.askText(text, matchFaq(this.t().faq, text)?.id);
   }
 
-  ask(question: string) {
-    this.chat.send(question);
+  ask(faqId: FaqId) {
+    this.chat.askFaq(faqId);
   }
 
   onKeydown(event: KeyboardEvent) {
@@ -80,17 +74,12 @@ export class ChatWidgetComponent {
     }
   }
 
-  isTyping(message: IChatMessage): boolean {
-    return message.role === 'assistant' && !message.content && !message.errorCode;
+  faq(id: FaqId | undefined): IFaqItem | undefined {
+    return id ? this.t().faq.find((item) => item.id === id) : undefined;
   }
 
-  /** Splits a reply into text and in-app product links (e.g. "/products/3"). */
-  segments(content: string): ISegment[] {
-    return content
-      .split(PRODUCT_LINK)
-      .filter(Boolean)
-      .map((part) =>
-        /^\/products\/\d+$/.test(part) ? { text: part, link: part } : { text: part },
-      );
+  /** Contacts go with the "contact a human" answer and with any unanswered question. */
+  showsContact(id: FaqId | undefined): boolean {
+    return !id || id === 'contact';
   }
 }
